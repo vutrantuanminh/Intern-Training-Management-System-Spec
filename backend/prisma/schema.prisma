@@ -1,0 +1,430 @@
+// Prisma Schema for Training Management System
+// Database: PostgreSQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// USER & AUTHENTICATION
+// ============================================
+
+model User {
+  id              Int       @id @default(autoincrement())
+  email           String    @unique
+  password        String
+  fullName        String
+  avatar          String?
+  isEmailVerified Boolean   @default(false)
+  verifyToken     String?
+  resetToken      String?
+  resetExpires    DateTime?
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  roles             UserRole[]
+  createdCourses    Course[]          @relation("CourseCreator")
+  courseTrainees    CourseTrainee[]
+  courseTrainers    CourseTrainer[]
+  dailyReports      DailyReport[]
+  reportTemplates   ReportTemplate[]
+  pullRequests      PullRequest[]     @relation("PRAuthor")
+  reviewedPRs       PullRequest[]     @relation("PRReviewer")
+  prComments        PRComment[]
+  notifications     Notification[]
+  chatRooms         ChatRoomMember[]
+  messages          ChatMessage[]
+  refreshTokens     RefreshToken[]
+  traineeTasks      TraineeTask[]
+
+  @@index([email])
+  @@index([isActive])
+}
+
+model Role {
+  id    Int        @id @default(autoincrement())
+  name  String     @unique // ADMIN, SUPERVISOR, TRAINER, TRAINEE
+  users UserRole[]
+}
+
+model UserRole {
+  userId Int
+  roleId Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role   Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+}
+
+model RefreshToken {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  userId    Int
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId])
+}
+
+// ============================================
+// COURSE MANAGEMENT
+// ============================================
+
+model Course {
+  id          Int           @id @default(autoincrement())
+  title       String
+  description String?
+  status      CourseStatus  @default(NOT_STARTED)
+  startDate   DateTime?
+  endDate     DateTime?
+  createdById Int
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  // Relations
+  creator   User            @relation("CourseCreator", fields: [createdById], references: [id])
+  subjects  Subject[]
+  trainees  CourseTrainee[]
+  trainers  CourseTrainer[]
+  chatRooms ChatRoom[]
+
+  @@index([status])
+  @@index([createdById])
+}
+
+enum CourseStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  FINISHED
+}
+
+model CourseTrainee {
+  id         Int           @id @default(autoincrement())
+  courseId   Int
+  traineeId  Int
+  status     TraineeStatus @default(ACTIVE)
+  enrolledAt DateTime      @default(now())
+
+  // Relations
+  course          Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  trainee         User             @relation(fields: [traineeId], references: [id], onDelete: Cascade)
+  traineeSubjects TraineeSubject[]
+
+  @@unique([courseId, traineeId])
+  @@index([status])
+}
+
+enum TraineeStatus {
+  ACTIVE
+  PASS
+  FAIL
+  RESIGN
+}
+
+model CourseTrainer {
+  courseId   Int
+  trainerId  Int
+  assignedAt DateTime @default(now())
+
+  // Relations
+  course  Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  trainer User   @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+
+  @@id([courseId, trainerId])
+}
+
+// ============================================
+// SUBJECT & TASK
+// ============================================
+
+model Subject {
+  id          Int           @id @default(autoincrement())
+  courseId    Int
+  title       String
+  description String?
+  status      SubjectStatus @default(NOT_STARTED)
+  order       Int
+  startDate   DateTime?
+  endDate     DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  // Relations
+  course          Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  tasks           Task[]
+  traineeSubjects TraineeSubject[]
+
+  @@index([courseId])
+  @@index([status])
+}
+
+enum SubjectStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  FINISHED
+}
+
+model Task {
+  id          Int       @id @default(autoincrement())
+  subjectId   Int
+  title       String
+  description String?
+  dueDate     DateTime?
+  order       Int
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  subject      Subject       @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  traineeTasks TraineeTask[]
+  pullRequests PullRequest[]
+
+  @@index([subjectId])
+}
+
+model TraineeSubject {
+  id              Int           @id @default(autoincrement())
+  courseTraineeId Int
+  subjectId       Int
+  status          SubjectStatus @default(NOT_STARTED)
+  grade           Float?
+  feedback        String?
+  completedAt     DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  // Relations
+  courseTrainee CourseTrainee @relation(fields: [courseTraineeId], references: [id], onDelete: Cascade)
+  subject       Subject       @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+
+  @@unique([courseTraineeId, subjectId])
+  @@index([status])
+}
+
+model TraineeTask {
+  id          Int        @id @default(autoincrement())
+  traineeId   Int
+  taskId      Int
+  status      TaskStatus @default(NOT_STARTED)
+  completedAt DateTime?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  // Relations
+  trainee User       @relation(fields: [traineeId], references: [id], onDelete: Cascade)
+  task    Task       @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  files   TaskFile[]
+
+  @@unique([traineeId, taskId])
+  @@index([status])
+}
+
+enum TaskStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+}
+
+model TaskFile {
+  id            Int      @id @default(autoincrement())
+  traineeTaskId Int
+  fileName      String
+  fileUrl       String
+  fileSize      Int?
+  mimeType      String?
+  uploadedAt    DateTime @default(now())
+
+  // Relations
+  traineeTask TraineeTask @relation(fields: [traineeTaskId], references: [id], onDelete: Cascade)
+
+  @@index([traineeTaskId])
+}
+
+// ============================================
+// DAILY REPORTS
+// ============================================
+
+model DailyReport {
+  id        Int      @id @default(autoincrement())
+  traineeId Int
+  date      DateTime @db.Date
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  trainee User @relation(fields: [traineeId], references: [id], onDelete: Cascade)
+
+  @@unique([traineeId, date])
+  @@index([date])
+}
+
+model ReportTemplate {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  title     String
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// ============================================
+// PULL REQUESTS
+// ============================================
+
+model PullRequest {
+  id          Int      @id @default(autoincrement())
+  traineeId   Int
+  taskId      Int?
+  title       String
+  description String?
+  repoUrl     String
+  status      PRStatus @default(PENDING)
+  reviewerId  Int?
+  reviewedAt  DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  trainee  User        @relation("PRAuthor", fields: [traineeId], references: [id], onDelete: Cascade)
+  task     Task?       @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  reviewer User?       @relation("PRReviewer", fields: [reviewerId], references: [id], onDelete: SetNull)
+  comments PRComment[]
+
+  @@index([traineeId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+enum PRStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model PRComment {
+  id        Int      @id @default(autoincrement())
+  prId      Int
+  userId    Int
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  pullRequest PullRequest @relation(fields: [prId], references: [id], onDelete: Cascade)
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([prId])
+}
+
+// ============================================
+// CHAT
+// ============================================
+
+model ChatRoom {
+  id        Int      @id @default(autoincrement())
+  name      String?
+  isGroup   Boolean  @default(false)
+  courseId  Int?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  course   Course?          @relation(fields: [courseId], references: [id], onDelete: SetNull)
+  members  ChatRoomMember[]
+  messages ChatMessage[]
+
+  @@index([courseId])
+}
+
+model ChatRoomMember {
+  roomId   Int
+  userId   Int
+  joinedAt DateTime @default(now())
+
+  // Relations
+  room ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([roomId, userId])
+}
+
+model ChatMessage {
+  id        Int      @id @default(autoincrement())
+  roomId    Int
+  senderId  Int
+  content   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  // Relations
+  room   ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  sender User     @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([roomId])
+  @@index([createdAt])
+}
+
+// ============================================
+// NOTIFICATIONS
+// ============================================
+
+model Notification {
+  id        Int              @id @default(autoincrement())
+  userId    Int
+  type      NotificationType
+  title     String
+  message   String
+  isRead    Boolean          @default(false)
+  linkTo    String?
+  createdAt DateTime         @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isRead])
+  @@index([createdAt])
+}
+
+enum NotificationType {
+  COURSE
+  SUBJECT
+  TASK
+  PR
+  CHAT
+  REPORT
+  SYSTEM
+}
+
+// ============================================
+// BLOCKCHAIN CERTIFICATES
+// ============================================
+
+model Certificate {
+  id              Int      @id @default(autoincrement())
+  traineeId       Int
+  courseId        Int
+  certificateHash String   @unique // IPFS hash
+  txHash          String?  // Blockchain transaction hash
+  issuedAt        DateTime @default(now())
+  metadata        Json?    // Additional certificate data
+
+  @@index([traineeId])
+  @@index([courseId])
+}
