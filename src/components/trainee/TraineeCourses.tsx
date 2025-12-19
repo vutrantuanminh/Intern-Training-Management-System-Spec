@@ -352,12 +352,11 @@ function SubjectDetail({ subject, onBack, onTaskComplete }: {
                     {!isCompleted && canComplete && (
                       <div className="flex items-center gap-2 mt-4">
                         <button
-                          onClick={() => alert('File upload requires S3/MinIO configuration. Coming soon!')}
-                          className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-400 rounded-lg cursor-not-allowed"
-                          title="File upload not configured"
+                          onClick={() => setUploadingTaskId(task.id)}
+                          className="flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200"
                         >
                           <Upload className="w-4 h-4" />
-                          Upload (N/A)
+                          Upload Evidence
                         </button>
                         <button
                           onClick={() => handleCompleteTask(task.id)}
@@ -396,28 +395,38 @@ function UploadModal({ taskId, onClose, onUpload }: {
   onUpload: () => void;
 }) {
   const [uploading, setUploading] = useState(false);
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<FileList | null>(null);
 
   const handleUpload = async () => {
-    if (!file) return;
+    if (!files || files.length === 0) return;
 
     setUploading(true);
     try {
       const formData = new FormData();
-      formData.append('file', file);
+      // Backend expects 'files' field (plural) for multiple files
+      Array.from(files).forEach(file => {
+        formData.append('files', file);
+      });
 
-      await fetch(`http://localhost:5000/api/tasks/${taskId}/upload`, {
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch(`http://localhost:5000/api/tasks/${taskId}/upload`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+          'Authorization': `Bearer ${token}`,
         },
         body: formData,
       });
 
+      if (!response.ok) {
+        throw new Error('Upload failed');
+      }
+
+      alert('Files uploaded successfully!');
       onUpload();
+      onClose();
     } catch (error) {
-      console.error('Failed to upload file:', error);
-      alert('Failed to upload file');
+      console.error('Failed to upload files:', error);
+      alert('Failed to upload files. Please try again.');
     } finally {
       setUploading(false);
     }
@@ -435,14 +444,20 @@ function UploadModal({ taskId, onClose, onUpload }: {
 
         <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center mb-4">
           <Upload className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-          {file ? (
-            <p className="text-gray-700">{file.name}</p>
+          {files && files.length > 0 ? (
+            <div className="text-left">
+              <p className="text-gray-700 font-medium mb-2">{files.length} file(s) selected:</p>
+              {Array.from(files).map((f, i) => (
+                <p key={i} className="text-sm text-gray-600">• {f.name}</p>
+              ))}
+            </div>
           ) : (
-            <p className="text-gray-600 mb-2">Drag and drop files here or click to browse</p>
+            <p className="text-gray-600 mb-2">Select files to upload (max 10 files, 10MB each)</p>
           )}
           <input
             type="file"
-            onChange={(e) => setFile(e.target.files?.[0] || null)}
+            multiple
+            onChange={(e) => setFiles(e.target.files)}
             className="hidden"
             id="file-upload"
           />
@@ -453,7 +468,7 @@ function UploadModal({ taskId, onClose, onUpload }: {
 
         <button
           onClick={handleUpload}
-          disabled={!file || uploading}
+          disabled={!files || files.length === 0 || uploading}
           className="w-full px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 flex items-center justify-center gap-2"
         >
           {uploading && <Loader2 className="w-4 h-4 animate-spin" />}
