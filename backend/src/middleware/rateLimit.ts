@@ -5,9 +5,9 @@ import { env } from '../config/env.js';
 
 // Default rate limiter
 export const defaultLimiter = rateLimit({
-    store: new RedisStore({
+    store: redisStore ? new RedisStore({
         sendCommand: redisStore.sendCommand,
-    }),
+    }) : undefined, // Use memory store if Redis not available
     windowMs: env.rateLimitWindowMs, // 15 minutes
     max: 1000, // DEVELOPMENT: increased from 100 to 1000
     message: {
@@ -20,9 +20,9 @@ export const defaultLimiter = rateLimit({
 
 // Stricter limiter for auth endpoints
 export const authLimiter = rateLimit({
-    store: new RedisStore({
+    store: redisStore ? new RedisStore({
         sendCommand: redisStore.sendCommand,
-    }),
+    }) : undefined,
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: 1000, // DEVELOPMENT: increased from 10 to 1000
     message: {
@@ -36,9 +36,9 @@ export const authLimiter = rateLimit({
 
 // Upload limiter
 export const uploadLimiter = rateLimit({
-    store: new RedisStore({
+    store: redisStore ? new RedisStore({
         sendCommand: redisStore.sendCommand,
-    }),
+    }) : undefined,
     windowMs: 60 * 60 * 1000, // 1 hour
     max: 50, // 50 uploads per hour
     message: {

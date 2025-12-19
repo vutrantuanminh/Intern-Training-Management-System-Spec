@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import { createServer } from 'http';
+import path from 'path';
 
 import { env } from './config/env.js';
 import { prisma } from './config/database.js';
@@ -43,6 +44,9 @@ app.use(cors({
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token'],
 }));
+
+// Serve uploaded files
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 // Body parsing
 app.use(express.json({ limit: '10mb' }));
@@ -85,7 +89,7 @@ const gracefulShutdown = async () => {
     console.log('🔄 Shutting down gracefully...');
 
     await prisma.$disconnect();
-    await redis.disconnect();
+    if (redis) await redis.disconnect();
 
     httpServer.close(() => {
         console.log('👋 Server closed');
@@ -104,10 +108,12 @@ const startServer = async () => {
         console.log('✅ Database connected');
 
         // Connect to Redis
-        if (redis.status === 'wait') {
-            await redis.connect();
+        if (redis) {
+            if (redis.status === 'wait') {
+                await redis.connect();
+            }
+            console.log('✅ Redis connected');
         }
-        console.log('✅ Redis connected');
 
         // Start HTTP server
         httpServer.listen(env.port, () => {
