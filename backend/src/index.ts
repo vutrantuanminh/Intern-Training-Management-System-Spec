@@ -31,6 +31,9 @@ import uploadRoutes from './modules/upload/upload.routes.js';
 const app = express();
 const httpServer = createServer(app);
 
+// Trust proxy for Railway/production
+app.set('trust proxy', 1);
+
 // Initialize Socket.io
 initializeSocket(httpServer);
 
