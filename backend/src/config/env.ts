@@ -24,11 +24,17 @@ export const env = {
 
     // AWS
     awsRegion: process.env.AWS_REGION || 'ap-southeast-1',
-    awsAccessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-    awsSecretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+    awsAccessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
+    awsSecretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
     awsS3Bucket: process.env.AWS_S3_BUCKET || 'tms-uploads',
     awsS3Endpoint: process.env.AWS_S3_ENDPOINT,
     awsSesFromEmail: process.env.AWS_SES_FROM_EMAIL || 'noreply@localhost.com',
+
+    // Supabase
+    supabaseUrl: process.env.SUPABASE_URL || '',
+    supabaseAnonKey: process.env.SUPABASE_ANON_KEY || '',
+    supabaseServiceKey: process.env.SUPABASE_SERVICE_KEY || '',
+    supabaseBucket: process.env.SUPABASE_BUCKET || 'task-files',
 
     // SMTP
     smtpHost: process.env.SMTP_HOST,

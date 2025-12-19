@@ -5,23 +5,12 @@ import { validateParams, idParamSchema } from '../../middleware/validate.js';
 import { authenticate } from '../../middleware/auth.js';
 import { isTrainee } from '../../middleware/rbac.js';
 import multer from 'multer';
-import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
+import { uploadToSupabase, deleteFromSupabase } from '../../config/supabase.js';
 import { env } from '../../config/env.js';
 import { v4 as uuidv4 } from 'uuid';
 import path from 'path';
 
 const router = Router();
-
-// S3 client (MinIO for local dev)
-const s3Client = new S3Client({
-    region: env.awsRegion,
-    endpoint: env.awsS3Endpoint,
-    credentials: {
-        accessKeyId: env.awsAccessKeyId,
-        secretAccessKey: env.awsSecretAccessKey,
-    },
-    forcePathStyle: true, // Required for MinIO
-});
 
 // Multer for file uploads
 const upload = multer({
@@ -234,24 +223,21 @@ router.post(
                 });
             }
 
+
             const uploadedFiles = [];
 
             for (const file of files) {
                 const fileId = uuidv4();
                 const ext = path.extname(file.originalname);
-                const key = `tasks/${taskId}/trainee_${traineeId}/${fileId}${ext}`;
+                const filePath = `tasks/${taskId}/trainee_${traineeId}/${fileId}${ext}`;
 
-                // Upload to S3
-                await s3Client.send(new PutObjectCommand({
-                    Bucket: env.awsS3Bucket,
-                    Key: key,
-                    Body: file.buffer,
-                    ContentType: file.mimetype,
-                }));
-
-                const fileUrl = env.awsS3Endpoint
-                    ? `${env.awsS3Endpoint}/${env.awsS3Bucket}/${key}`
-                    : `https://${env.awsS3Bucket}.s3.${env.awsRegion}.amazonaws.com/${key}`;
+                // Upload to Supabase Storage
+                const fileUrl = await uploadToSupabase(
+                    env.supabaseBucket,
+                    filePath,
+                    file.buffer,
+                    file.mimetype
+                );
 
                 // Save file record
                 const taskFile = await prisma.taskFile.create({
@@ -335,15 +321,13 @@ router.delete(
                 return;
             }
 
-            // Delete from S3
-            const key = file.fileUrl.split('/').slice(-3).join('/');
+            // Delete from Supabase Storage
+            const urlParts = file.fileUrl.split('/');
+            const filePath = urlParts.slice(urlParts.indexOf('task-files') + 1).join('/');
             try {
-                await s3Client.send(new DeleteObjectCommand({
-                    Bucket: env.awsS3Bucket,
-                    Key: key,
-                }));
+                await deleteFromSupabase(env.supabaseBucket, filePath);
             } catch {
-                console.warn('Failed to delete file from S3:', key);
+                console.warn('Failed to delete file from Supabase:', filePath);
             }
 
             // Delete from database
