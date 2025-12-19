@@ -1,12 +1,11 @@
 import Redis from 'ioredis';
 import { env } from './env.js';
 
-// Create Redis client only if REDIS_URL is provided
-const redisUrl = env.redisUrl || 'redis://localhost:6379';
-const isRedisEnabled = !!env.redisUrl;
+// Create Redis client only if REDIS_URL is explicitly provided
+const isRedisEnabled = !!process.env.REDIS_URL;
 
 export const redis = isRedisEnabled
-    ? new Redis(redisUrl, {
+    ? new Redis(env.redisUrl, {
         maxRetriesPerRequest: 3,
         lazyConnect: true,
     })
