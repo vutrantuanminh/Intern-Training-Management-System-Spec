@@ -1,10 +1,16 @@
 import { createClient } from '@supabase/supabase-js';
 import { env } from './env.js';
 
+// Validate Supabase configuration
+if (!env.supabaseUrl || !env.supabaseServiceKey) {
+    console.warn('⚠️  Supabase not configured. File uploads will fail.');
+    console.warn('   Please set SUPABASE_URL and SUPABASE_SERVICE_KEY in .env');
+}
+
 // Supabase client for storage
 export const supabase = createClient(
-    env.supabaseUrl,
-    env.supabaseServiceKey
+    env.supabaseUrl || 'https://placeholder.supabase.co',
+    env.supabaseServiceKey || 'placeholder-key'
 );
 
 export const uploadToSupabase = async (
@@ -13,23 +19,33 @@ export const uploadToSupabase = async (
     file: Buffer,
     contentType: string
 ): Promise<string> => {
-    const { data, error } = await supabase.storage
-        .from(bucket)
-        .upload(path, file, {
-            contentType,
-            upsert: false,
-        });
+    try {
+        const { data, error } = await supabase.storage
+            .from(bucket)
+            .upload(path, file, {
+                contentType,
+                upsert: false,
+            });
 
-    if (error) {
-        throw new Error(`Supabase upload failed: ${error.message}`);
+        if (error) {
+            console.error('Supabase upload error:', error);
+            throw new Error(`Supabase upload failed: ${error.message}`);
+        }
+
+        if (!data) {
+            throw new Error('Supabase upload returned no data');
+        }
+
+        // Get public URL
+        const { data: { publicUrl } } = supabase.storage
+            .from(bucket)
+            .getPublicUrl(path);
+
+        return publicUrl;
+    } catch (error: any) {
+        console.error('Upload to Supabase failed:', error);
+        throw new Error(`File upload failed: ${error.message}`);
     }
-
-    // Get public URL
-    const { data: { publicUrl } } = supabase.storage
-        .from(bucket)
-        .getPublicUrl(path);
-
-    return publicUrl;
 };
 
 export const deleteFromSupabase = async (

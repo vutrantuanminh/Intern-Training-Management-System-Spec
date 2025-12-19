@@ -5,12 +5,18 @@ import { validateParams, idParamSchema } from '../../middleware/validate.js';
 import { authenticate } from '../../middleware/auth.js';
 import { isTrainee } from '../../middleware/rbac.js';
 import multer from 'multer';
-import { uploadToSupabase, deleteFromSupabase } from '../../config/supabase.js';
 import { env } from '../../config/env.js';
 import { v4 as uuidv4 } from 'uuid';
 import path from 'path';
+import fs from 'fs';
 
 const router = Router();
+
+// Create uploads directory if not exists
+const uploadsDir = path.join(process.cwd(), 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+}
 
 // Multer for file uploads
 const upload = multer({
@@ -21,16 +27,33 @@ const upload = multer({
     fileFilter: (_req, file, cb) => {
         // Allow common file types
         const allowedTypes = [
-            'image/jpeg', 'image/png', 'image/gif', 'image/webp',
-            'application/pdf', 'application/zip',
+            // Images
+            'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml', 'image/bmp',
+            // Documents
+            'application/pdf',
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
+            'application/vnd.ms-excel',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
+            'application/vnd.ms-powerpoint',
+            'application/vnd.openxmlformats-officedocument.presentationml.presentation', // .pptx
+            // Archives
+            'application/zip', 'application/x-zip-compressed',
+            'application/x-rar-compressed', 'application/x-7z-compressed',
+            // Text/Code
             'text/plain', 'text/html', 'text/css', 'text/javascript',
-            'application/javascript', 'application/json',
-            'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'application/javascript', 'application/json', 'application/xml',
+            // Source code files
+            'text/x-c', 'text/x-csrc', 'text/x-c++src', 'text/x-chdr', 'text/x-c++hdr',
+            'text/x-python', 'text/x-java-source', 'text/x-csharp',
+            'application/x-python-code', 'application/x-java',
+            // Videos
+            'video/mp4', 'video/mpeg', 'video/quicktime', 'video/x-msvideo',
         ];
         if (allowedTypes.includes(file.mimetype)) {
             cb(null, true);
         } else {
-            cb(new Error('File type not allowed'));
+            cb(new Error(`File type not allowed: ${file.mimetype}`));
         }
     },
 });
@@ -229,15 +252,21 @@ router.post(
             for (const file of files) {
                 const fileId = uuidv4();
                 const ext = path.extname(file.originalname);
-                const filePath = `tasks/${taskId}/trainee_${traineeId}/${fileId}${ext}`;
+                const relativePath = `tasks/${taskId}/trainee_${traineeId}`;
+                const fullDir = path.join(uploadsDir, relativePath);
 
-                // Upload to Supabase Storage
-                const fileUrl = await uploadToSupabase(
-                    env.supabaseBucket,
-                    filePath,
-                    file.buffer,
-                    file.mimetype
-                );
+                // Create directory if not exists
+                if (!fs.existsSync(fullDir)) {
+                    fs.mkdirSync(fullDir, { recursive: true });
+                }
+
+                // Save file to local filesystem
+                const fileName = `${fileId}${ext}`;
+                const fullPath = path.join(fullDir, fileName);
+                fs.writeFileSync(fullPath, file.buffer);
+
+                // Generate URL (for local development)
+                const fileUrl = `/uploads/${relativePath}/${fileName}`;
 
                 // Save file record
                 const taskFile = await prisma.taskFile.create({
@@ -321,13 +350,14 @@ router.delete(
                 return;
             }
 
-            // Delete from Supabase Storage
-            const urlParts = file.fileUrl.split('/');
-            const filePath = urlParts.slice(urlParts.indexOf('task-files') + 1).join('/');
+            // Delete from local filesystem
+            const filePath = path.join(process.cwd(), file.fileUrl);
             try {
-                await deleteFromSupabase(env.supabaseBucket, filePath);
-            } catch {
-                console.warn('Failed to delete file from Supabase:', filePath);
+                if (fs.existsSync(filePath)) {
+                    fs.unlinkSync(filePath);
+                }
+            } catch (error) {
+                console.warn('Failed to delete file from filesystem:', filePath, error);
             }
 
             // Delete from database
