@@ -102,18 +102,39 @@
   "vietnamese": "Tiếng Việt",
   "switchLanguage": "Chuyển ngôn ngữ",
   "userMenu": "Menu người dùng",
-  "login": "Đăng nhập",
-  "welcomeBack": "Chào mừng trở lại",
-  "signInToYourAccount": "Đăng nhập vào tài khoản của bạn",
-  "email": "Email",
-  "emailPlaceholder": "Nhập địa chỉ email",
-  "password": "Mật khẩu",
-  "passwordPlaceholder": "Nhập mật khẩu của bạn",
-  "signIn": "Đăng nhập",
-  "signingIn": "Đang đăng nhập...",
-  "loginFooter": "© 2024 Hệ thống Quản lý Đào tạo",
-  "unauthorized": "Không có quyền truy cập"
-  ,
+  "login": {
+    "title": "Đăng nhập vào tài khoản",
+    "subtitle": "Nhập thông tin đăng nhập để truy cập cổng đào tạo",
+    "email": "Địa chỉ Email",
+    "password": "Mật khẩu",
+    "remember_me": "Ghi nhớ đăng nhập",
+    "sign_in": "Đăng nhập",
+    "signing_in": "Đang đăng nhập...",
+    "no_account": "Chưa có tài khoản?",
+    "contact_admin": "Liên hệ quản trị viên",
+    "invalid_credentials": "Email hoặc mật khẩu không đúng. Vui lòng thử lại.",
+    "welcome_title": "Chào mừng đến với",
+    "welcome_description": "Tối ưu hóa chương trình đào tạo với công cụ quản lý khóa học, theo dõi tiến độ và cộng tác nhóm mạnh mẽ.",
+    "features": {
+      "training": {
+        "title": "Đào tạo toàn diện",
+        "description": "Quản lý chương trình đào tạo hoàn chỉnh với khóa học, môn học và nhiệm vụ"
+      },
+      "roles": {
+        "title": "Phân quyền theo vai trò",
+        "description": "Admin, Giám sát, Giảng viên và Học viên với quyền hạn riêng biệt"
+      },
+      "tracking": {
+        "title": "Theo dõi tiến độ",
+        "description": "Giám sát báo cáo hàng ngày, hoàn thành nhiệm vụ và xem xét pull request"
+      },
+      "analytics": {
+        "title": "Phân tích thời gian thực",
+        "description": "Theo dõi số liệu hiệu suất và kết quả đào tạo theo thời gian thực"
+      }
+    }
+  },
+  "unauthorized": "Không có quyền truy cập",
   "supervisor": {
     "allTrainees": "Tất cả học viên",
     "viewAllTrainees": "Xem tất cả học viên trong hệ thống",
@@ -275,12 +296,10 @@
     "failedUncompleteTask": "Không thể hoàn lại trạng thái hoàn thành:",
     "filesSelected": "Đã chọn {{count}} tệp:",
     "selectFilesHint": "Chọn tệp để tải lên (tối đa 10 tệp, 10MB mỗi tệp)"
-  }
-  ,
+  },
   "traineeCourses_extra": {
     "statusLabel": "Trạng thái: {{status}}"
-  }
-  ,
+  },
   "traineePullRequestView": {
     "pleaseLogin": "Vui lòng đăng nhập trước",
     "loading": "Đang tải...",
@@ -325,8 +344,7 @@
     "failedLinkRepo": "Liên kết repo thất bại",
     "unlinkConfirm": "Bạn có chắc muốn hủy liên kết kho lưu trữ này không?",
     "failedUnlinkRepo": "Không thể hủy liên kết kho lưu trữ"
-  }
-  ,
+  },
   "subjectManagement": {
     "startSubject": "Bắt đầu môn học",
     "finishSubject": "Kết thúc môn học",
@@ -338,8 +356,7 @@
     "unknown": "Không rõ",
     "noCourse": "Không có khoá học",
     "traineeId": "ID"
-  }
-  ,
+  },
   "shared": {
     "chat": {
       "searchPlaceholder": "Tìm kiếm cuộc trò chuyện...",

@@ -102,16 +102,38 @@
   "vietnamese": "Vietnamese",
   "switchLanguage": "Switch language",
   "userMenu": "User menu",
-  "login": "Login",
-  "welcomeBack": "Welcome back",
-  "signInToYourAccount": "Sign in to your account",
-  "email": "Email",
-  "emailPlaceholder": "Enter your email",
-  "password": "Password",
-  "passwordPlaceholder": "Enter your password",
-  "signIn": "Sign In",
-  "signingIn": "Signing in...",
-  "loginFooter": "© 2024 Training Management System",
+  "login": {
+    "title": "Sign in to your account",
+    "subtitle": "Enter your credentials to access the training portal",
+    "email": "Email Address",
+    "password": "Password",
+    "remember_me": "Remember me",
+    "sign_in": "Sign in",
+    "signing_in": "Signing in...",
+    "no_account": "Don't have an account?",
+    "contact_admin": "Contact your administrator",
+    "invalid_credentials": "Invalid email or password. Please try again.",
+    "welcome_title": "Welcome to Modern",
+    "welcome_description": "Streamline your training programs with powerful tools for course management, progress tracking, and team collaboration.",
+    "features": {
+      "training": {
+        "title": "Comprehensive Training",
+        "description": "Manage complete training programs with courses, subjects, and tasks"
+      },
+      "roles": {
+        "title": "Role-Based Access",
+        "description": "Admin, Supervisor, Trainer, and Trainee roles with specific permissions"
+      },
+      "tracking": {
+        "title": "Progress Tracking",
+        "description": "Monitor daily reports, task completion, and pull request reviews"
+      },
+      "analytics": {
+        "title": "Real-Time Analytics",
+        "description": "Track performance metrics and training outcomes in real-time"
+      }
+    }
+  },
   "unauthorized": "Unauthorized",
   "supervisor": {
     "allTrainees": "All Trainees",
@@ -274,12 +296,10 @@
     "failedUncompleteTask": "Failed to uncomplete task:",
     "filesSelected": "{{count}} file(s) selected:",
     "selectFilesHint": "Select files to upload (max 10 files, 10MB each)"
-  }
-  ,
+  },
   "traineeCourses_extra": {
     "statusLabel": "Status: {{status}}"
-  }
-  ,
+  },
   "traineePullRequestView": {
     "pleaseLogin": "Please login first",
     "loading": "Loading...",
@@ -324,8 +344,7 @@
     "failedLinkRepo": "Failed to link repository",
     "unlinkConfirm": "Are you sure you want to unlink this repository?",
     "failedUnlinkRepo": "Failed to unlink repository"
-  }
-  ,
+  },
   "subjectManagement": {
     "startSubject": "Start Subject",
     "finishSubject": "Finish Subject",
@@ -337,8 +356,7 @@
     "unknown": "Unknown",
     "noCourse": "No course",
     "traineeId": "ID"
-  }
-  ,
+  },
   "shared": {
     "chat": {
       "searchPlaceholder": "Search conversations...",
