@@ -15,6 +15,7 @@
   border-radius: 16px;
   font-size: 16px;
 }
+
 /* Login component styles extracted from inline and style props */
 .login-bg {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -22,17 +23,17 @@
 }
 
 .login-card {
-  background: rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(16px);
   padding: 2.5rem;
-  border: 1px solid rgba(255,255,255,0.2);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 32px;
 }
 
 .login-logo {
   width: 5rem;
   height: 5rem;
-  background: rgba(255,255,255,0.15);
+  background: rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
@@ -71,4 +72,15 @@
   filter: blur(48px);
   bottom: 2.5rem;
   left: 33%;
+}
+
+/* Left panel responsive - hide on mobile, show on desktop */
+.left-panel {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .left-panel {
+    display: flex;
+  }
 }
