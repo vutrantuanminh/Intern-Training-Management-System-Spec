@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { ArrowLeft, CheckCircle2, Circle, Upload, X, Loader2, BookOpen, Github } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../lib/apiClient';
+import { config } from '../../config/api';
 import '../../styles/TraineeCourses.css';
 
 interface TraineeCoursesProps {
@@ -310,7 +311,7 @@ function CourseDetail({ course, onBack, onSubjectSelect }: CourseDetailProps) {
                     <button
                       onClick={() => onSubjectSelect(subject)}
                       className="px-4 py-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100"
-                      >
+                    >
                       {t('traineeCourses.viewTasks')}
                     </button>
                   </div>
@@ -535,7 +536,7 @@ function UploadModal({ taskId, onClose, onUpload }: {
       });
 
       const token = localStorage.getItem('accessToken');
-      const response = await fetch(`http://localhost:5000/api/tasks/${taskId}/upload`, {
+      const response = await fetch(`${config.apiUrl}/tasks/${taskId}/upload`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
