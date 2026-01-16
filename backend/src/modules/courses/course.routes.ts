@@ -665,6 +665,8 @@ router.post(
             }
 
             // Send enrollment emails
+            // Temporarily disabled to avoid 500 errors if email service is down
+            /*
             for (const trainee of trainees) {
                 const emailData = emailTemplates.courseEnrollment(
                     trainee.fullName,
@@ -674,6 +676,7 @@ router.post(
                 emailData.to = trainee.email;
                 await queueEmail(emailData);
             }
+            */
 
             successResponse(res, null, 'Trainees added successfully');
         } catch (error) {
