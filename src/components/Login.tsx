@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { authService } from '../services/authService';
 import { auth } from '../config/api';
 import { api } from '../lib/apiClient';
-import { LogIn, Mail, Lock, GraduationCap, Users, BookOpen, BarChart3, Eye, EyeOff } from 'lucide-react';
+import { LogIn, GraduationCap, Users, BookOpen, BarChart3 } from 'lucide-react';
 
 interface LoginProps {
   onLogin: (user: any) => void;
@@ -13,7 +13,6 @@ export function Login({ onLogin }: LoginProps) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -167,20 +166,15 @@ export function Login({ onLogin }: LoginProps) {
                 <label htmlFor="email" className="block text-gray-700 text-sm font-medium mb-2">
                   Email Address
                 </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Mail className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all bg-gray-50 hover:bg-white text-sm"
-                    placeholder="you@example.com"
-                    required
-                  />
-                </div>
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all bg-gray-50 hover:bg-white text-sm"
+                  placeholder="you@example.com"
+                  required
+                />
               </div>
 
               {/* Password Field */}
@@ -188,31 +182,15 @@ export function Login({ onLogin }: LoginProps) {
                 <label htmlFor="password" className="block text-gray-700 text-sm font-medium mb-2">
                   Password
                 </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Lock className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <input
-                    id="password"
-                    type={showPassword ? 'text' : 'password'}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all bg-gray-50 hover:bg-white text-sm"
-                    placeholder="••••••••"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-5 w-5" />
-                    ) : (
-                      <Eye className="h-5 w-5" />
-                    )}
-                  </button>
-                </div>
+                <input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all bg-gray-50 hover:bg-white text-sm"
+                  placeholder="••••••••"
+                  required
+                />
               </div>
 
               {/* Remember Me & Forgot Password */}
