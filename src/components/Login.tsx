@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import '../styles/Login.css';
 import { authService } from '../services/authService';
 import { auth } from '../config/api';
 import { api } from '../lib/apiClient';
@@ -83,9 +82,9 @@ export function Login({ onLogin }: LoginProps) {
   ];
 
   return (
-    <div className="login-page min-h-screen flex">
+    <div className="min-h-screen flex">
       {/* Left Panel - Branding & Features */}
-      <div className="left-panel w-1/2 bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-800 p-12 flex flex-col justify-between relative overflow-hidden">
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-800 p-12 flex-col justify-between relative overflow-hidden">
         {/* Decorative background elements */}
         <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-white/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
@@ -97,13 +96,13 @@ export function Login({ onLogin }: LoginProps) {
               <GraduationCap className="w-8 h-8 text-white" />
             </div>
             <div>
-              <h2 className="text-white text-2xl">TMS</h2>
+              <h2 className="text-white text-2xl font-semibold">TMS</h2>
               <p className="text-indigo-200 text-sm">Training Management System</p>
             </div>
           </div>
 
           <div className="mb-8">
-            <h1 className="text-white text-4xl mb-4">
+            <h1 className="text-white text-4xl font-semibold mb-4">
               Welcome to Modern
               <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-indigo-200">
@@ -119,13 +118,13 @@ export function Login({ onLogin }: LoginProps) {
             {features.map((feature, index) => (
               <div
                 key={index}
-                className="feature-card flex items-start gap-4 bg-white/5 backdrop-blur-sm p-4 rounded-xl border border-white/10 hover:bg-white/10 transition-all duration-300"
+                className="flex items-start gap-4 bg-white/5 backdrop-blur-sm p-4 rounded-xl border border-white/10 hover:bg-white/10 transition-all duration-300"
               >
                 <div className="bg-white/10 p-2 rounded-lg">
                   <feature.icon className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-white mb-1">{feature.title}</h3>
+                  <h3 className="text-white font-medium mb-1">{feature.title}</h3>
                   <p className="text-indigo-200 text-sm">{feature.description}</p>
                 </div>
               </div>
@@ -141,23 +140,23 @@ export function Login({ onLogin }: LoginProps) {
       </div>
 
       {/* Right Panel - Login Form */}
-      <div className="login-form-container flex-1 flex items-center justify-center p-6 bg-gray-50">
+      <div className="flex-1 flex items-center justify-center p-6 bg-gray-50">
         <div className="w-full max-w-md">
           {/* Mobile Logo */}
-          <div className="mobile-logo lg:hidden flex items-center justify-center gap-3 mb-8">
+          <div className="lg:hidden flex items-center justify-center gap-3 mb-8">
             <div className="bg-indigo-600 p-3 rounded-xl">
               <GraduationCap className="w-8 h-8 text-white" />
             </div>
             <div>
-              <h2 className="text-2xl">TMS</h2>
+              <h2 className="text-2xl font-semibold">TMS</h2>
               <p className="text-gray-600 text-sm">Training Management</p>
             </div>
           </div>
 
           <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
             <div className="mb-8">
-              <h1 className="text-gray-900 mb-2">Sign in to your account</h1>
-              <p className="text-gray-600">
+              <h1 className="text-gray-900 text-xl font-semibold mb-2">Sign in to your account</h1>
+              <p className="text-gray-600 text-sm">
                 Enter your credentials to access the training portal
               </p>
             </div>
@@ -165,7 +164,7 @@ export function Login({ onLogin }: LoginProps) {
             <form onSubmit={handleSubmit} className="space-y-5">
               {/* Email Field */}
               <div>
-                <label htmlFor="email" className="block text-gray-700 mb-2">
+                <label htmlFor="email" className="block text-gray-700 text-sm font-medium mb-2">
                   Email Address
                 </label>
                 <div className="relative">
@@ -177,7 +176,7 @@ export function Login({ onLogin }: LoginProps) {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all bg-gray-50 hover:bg-white"
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all bg-gray-50 hover:bg-white text-sm"
                     placeholder="you@example.com"
                     required
                   />
@@ -186,7 +185,7 @@ export function Login({ onLogin }: LoginProps) {
 
               {/* Password Field */}
               <div>
-                <label htmlFor="password" className="block text-gray-700 mb-2">
+                <label htmlFor="password" className="block text-gray-700 text-sm font-medium mb-2">
                   Password
                 </label>
                 <div className="relative">
@@ -198,7 +197,7 @@ export function Login({ onLogin }: LoginProps) {
                     type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all bg-gray-50 hover:bg-white"
+                    className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all bg-gray-50 hover:bg-white text-sm"
                     placeholder="••••••••"
                     required
                   />
@@ -245,7 +244,7 @@ export function Login({ onLogin }: LoginProps) {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 px-4 rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group"
+                className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 px-4 rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group font-medium"
               >
                 {isLoading ? (
                   <>
@@ -271,7 +270,7 @@ export function Login({ onLogin }: LoginProps) {
               Don't have an account?{' '}
               <a
                 href="#"
-                className="text-indigo-600 hover:text-indigo-700 transition-colors"
+                className="text-indigo-600 hover:text-indigo-700 font-medium transition-colors"
                 onClick={(e) => e.preventDefault()}
               >
                 Contact your administrator
