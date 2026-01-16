@@ -43,9 +43,9 @@ export function CourseDetail({ courseId, onClose }: CourseDetailProps) {
 
             // Extract trainees data
             setTrainees(data.trainees?.map((ct: any) => ({
-                id: ct.id,
-                fullName: ct.fullName,
-                email: ct.email,
+                id: ct.id || ct.trainee?.id,
+                fullName: ct.fullName || ct.trainee?.fullName,
+                email: ct.email || ct.trainee?.email,
                 status: ct.status,
             })) || []);
         } catch (error) {
