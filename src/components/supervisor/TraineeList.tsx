@@ -1,8 +1,10 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { mockUsers } from '../../data/mockData';
 import { Search } from 'lucide-react';
 
 export function TraineeList() {
+  const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
   
   const trainees = mockUsers.filter(u => u.role === 'trainee');
@@ -14,8 +16,8 @@ export function TraineeList() {
   return (
     <div className="space-y-6">
       <div>
-        <h3>All Trainees</h3>
-        <p className="text-gray-600 mt-1">View all trainees in the system</p>
+        <h3>{t('supervisor.traineeList.title')}</h3>
+        <p className="text-gray-600 mt-1">{t('supervisor.traineeList.description')}</p>
       </div>
 
       <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
@@ -23,7 +25,7 @@ export function TraineeList() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
           <input
             type="text"
-            placeholder="Search trainees..."
+            placeholder={t('supervisor.traineeList.searchPlaceholder')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
@@ -35,10 +37,10 @@ export function TraineeList() {
         <table className="w-full">
           <thead className="bg-gray-50 border-b border-gray-200">
             <tr>
-              <th className="px-6 py-3 text-left text-gray-700">Name</th>
-              <th className="px-6 py-3 text-left text-gray-700">Email</th>
-              <th className="px-6 py-3 text-left text-gray-700">Joined</th>
-              <th className="px-6 py-3 text-left text-gray-700">Actions</th>
+              <th className="px-6 py-3 text-left text-gray-700">{t('supervisor.table.name')}</th>
+              <th className="px-6 py-3 text-left text-gray-700">{t('supervisor.table.email')}</th>
+              <th className="px-6 py-3 text-left text-gray-700">{t('supervisor.table.joined')}</th>
+              <th className="px-6 py-3 text-left text-gray-700">{t('supervisor.table.actions')}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
@@ -58,7 +60,7 @@ export function TraineeList() {
                 </td>
                 <td className="px-6 py-4">
                   <button className="px-4 py-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100">
-                    View Profile
+                    {t('supervisor.traineeList.viewProfile')}
                   </button>
                 </td>
               </tr>
@@ -68,7 +70,7 @@ export function TraineeList() {
       </div>
 
       <div className="text-gray-600">
-        Showing {filteredTrainees.length} of {trainees.length} trainees
+        {t('supervisor.traineeList.showing', { shown: filteredTrainees.length, total: trainees.length })}
       </div>
     </div>
   );

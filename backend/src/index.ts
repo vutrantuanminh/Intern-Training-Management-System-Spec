@@ -15,6 +15,7 @@ import { initializeSocket } from './socket/index.js';
 
 // Import routes
 import authRoutes from './modules/auth/auth.routes.js';
+import githubAuthRoutes from './modules/auth/githubAuth.routes';
 import userRoutes from './modules/users/user.routes.js';
 import courseRoutes from './modules/courses/course.routes.js';
 import subjectRoutes from './modules/subjects/subject.routes.js';
@@ -27,6 +28,7 @@ import prRoutes from './modules/pull-requests/pr.routes.js';
 import chatRoutes from './modules/chat/chat.routes.js';
 import notificationRoutes from './modules/notifications/notification.routes.js';
 import uploadRoutes from './modules/upload/upload.routes.js';
+import pullRequestRoutes from './modules/pull-requests/routes';
 
 const app = express();
 const httpServer = createServer(app);
@@ -70,6 +72,7 @@ app.get('/health', (_req, res) => {
 
 // API routes
 app.use('/api/auth', authRoutes);
+app.use('/api/auth', githubAuthRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/courses', courseRoutes);
 app.use('/api', subjectRoutes); // Mixed routes
@@ -82,6 +85,7 @@ app.use('/api/pull-requests', prRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api', pullRequestRoutes);
 
 // Error handling
 app.use(notFoundHandler);

@@ -20,6 +20,8 @@ model User {
   password        String
   fullName        String
   avatar          String?
+  githubId        String?   @unique // GitHub user ID
+  githubUsername  String?   // GitHub username
   isEmailVerified Boolean   @default(false)
   verifyToken     String?
   resetToken      String?
@@ -43,9 +45,11 @@ model User {
   messages          ChatMessage[]
   refreshTokens     RefreshToken[]
   traineeTasks      TraineeTask[]
+  traineeRepos      TraineeRepo[]     @relation("TraineeRepos")
 
   @@index([email])
   @@index([isActive])
+  @@index([githubId])
 }
 
 model Role {
@@ -97,6 +101,9 @@ model Course {
   trainees  CourseTrainee[]
   trainers  CourseTrainer[]
   chatRooms ChatRoom[]
+  pullRequests PullRequest[]
+  repos     CourseRepo[]
+  traineeRepos TraineeRepo[] @relation("TraineeCourseRepos")
 
   @@index([status])
   @@index([createdById])
@@ -287,28 +294,71 @@ model ReportTemplate {
 // PULL REQUESTS
 // ============================================
 
+model CourseRepo {
+  id        Int      @id @default(autoincrement())
+  courseId  Int
+  repoName  String   // GitHub repo name (owner/repo)
+  repoUrl   String   // GitHub repo URL
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([courseId, repoName])
+  @@index([repoName])
+}
+
+model TraineeRepo {
+  id         Int      @id @default(autoincrement())
+  traineeId  Int
+  courseId   Int      // Repo belongs to which course
+  repoName   String   // GitHub repo name (owner/repo)
+  repoUrl    String   // GitHub repo URL
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relations
+  trainee User   @relation("TraineeRepos", fields: [traineeId], references: [id], onDelete: Cascade)
+  course  Course @relation("TraineeCourseRepos", fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([traineeId, courseId, repoName])
+  @@index([traineeId])
+  @@index([courseId])
+  @@index([repoName])
+}
+
 model PullRequest {
-  id          Int      @id @default(autoincrement())
-  traineeId   Int
-  taskId      Int?
-  title       String
-  description String?
-  repoUrl     String
-  status      PRStatus @default(PENDING)
-  reviewerId  Int?
-  reviewedAt  DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id            Int      @id @default(autoincrement())
+  traineeId     Int
+  courseId      Int
+  taskId        Int?
+  title         String
+  description   String?
+  repoUrl       String   // GitHub repo URL
+  prUrl         String?  // GitHub PR URL (optional for backwards compatibility)
+  prNumber      Int?     // GitHub PR number (optional)
+  repoName      String?  // Repository name (owner/repo) (optional)
+  githubUserId  String?  // GitHub user ID of trainee
+  status        PRStatus @default(PENDING)
+  reviewerId    Int?
+  reviewedAt    DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   // Relations
   trainee  User        @relation("PRAuthor", fields: [traineeId], references: [id], onDelete: Cascade)
+  course   Course      @relation(fields: [courseId], references: [id], onDelete: Cascade)
   task     Task?       @relation(fields: [taskId], references: [id], onDelete: SetNull)
   reviewer User?       @relation("PRReviewer", fields: [reviewerId], references: [id], onDelete: SetNull)
   comments PRComment[]
 
   @@index([traineeId])
+  @@index([courseId])
   @@index([status])
   @@index([createdAt])
+  @@index([repoName])
+  @@index([prNumber])
 }
 
 enum PRStatus {

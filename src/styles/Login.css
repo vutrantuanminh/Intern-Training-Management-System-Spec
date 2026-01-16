@@ -1,0 +1,74 @@
+.login-title {
+  font-family: 'Poppins', sans-serif;
+}
+
+.login-input {
+  border-radius: 16px;
+  font-size: 15px;
+}
+
+.login-error-box {
+  border-radius: 16px;
+}
+
+.login-btn {
+  border-radius: 16px;
+  font-size: 16px;
+}
+/* Login component styles extracted from inline and style props */
+.login-bg {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  font-family: 'Poppins', sans-serif;
+}
+
+.login-card {
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(16px);
+  padding: 2.5rem;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 32px;
+}
+
+.login-logo {
+  width: 5rem;
+  height: 5rem;
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 24px;
+}
+
+.floating-orb-pink {
+  position: absolute;
+  width: 18rem;
+  height: 18rem;
+  background: rgba(236, 72, 153, 0.25);
+  border-radius: 9999px;
+  filter: blur(48px);
+  top: 2.5rem;
+  left: 2.5rem;
+}
+
+.floating-orb-blue {
+  position: absolute;
+  width: 20rem;
+  height: 20rem;
+  background: rgba(59, 130, 246, 0.25);
+  border-radius: 9999px;
+  filter: blur(48px);
+  top: 5rem;
+  right: 5rem;
+}
+
+.floating-orb-purple {
+  position: absolute;
+  width: 24rem;
+  height: 24rem;
+  background: rgba(139, 92, 246, 0.25);
+  border-radius: 9999px;
+  filter: blur(48px);
+  bottom: 2.5rem;
+  left: 33%;
+}

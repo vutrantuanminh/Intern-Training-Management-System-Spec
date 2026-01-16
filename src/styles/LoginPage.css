@@ -1,0 +1,9 @@
+/* LoginPage component styles extracted from inline and style props */
+.loginpage-bg {
+  background: linear-gradient(135deg, #ff00cc 0%, #6600ff 50%, #00ccff 100%);
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.loginpage-card {
+  box-shadow: 0 32px 80px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.2);
+}

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { api } from '../../lib/apiClient';
 import { Send, Search, Plus, X, Loader2, MessageSquare, Users } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface ChatInterfaceProps {
   currentUserId: string;
@@ -38,6 +39,7 @@ export function ChatInterface({ currentUserId }: ChatInterfaceProps) {
   const [groupName, setGroupName] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const userId = parseInt(currentUserId);
+  const { t } = useTranslation();
 
   // Load rooms on mount
   useEffect(() => {
@@ -173,12 +175,12 @@ export function ChatInterface({ currentUserId }: ChatInterfaceProps) {
                 loadAvailableUsers();
               }}
               className="p-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
-              title="New conversation"
+              title={t('newConversation')}
             >
               <Plus className="w-4 h-4" />
             </button>
           </div>
-          <div className="relative">
+          <div className="relative z-0">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
@@ -217,7 +219,7 @@ export function ChatInterface({ currentUserId }: ChatInterfaceProps) {
                     </div>
                     {room.lastMessage && (
                       <p className="text-gray-600 text-sm truncate">
-                        {room.lastMessage.senderId === userId && 'You: '}
+                        {room.lastMessage.senderId === userId && t('shared.chat.youPrefix')}
                         {room.lastMessage.content}
                       </p>
                     )}
@@ -228,7 +230,7 @@ export function ChatInterface({ currentUserId }: ChatInterfaceProps) {
           ) : (
             <div className="p-4 text-center text-gray-500">
               <MessageSquare className="w-8 h-8 mx-auto mb-2" />
-              <p>No conversations yet</p>
+              <p>{t('shared.chat.noConversations')}</p>
               <button
                 onClick={() => {
                   setShowNewChat(true);
@@ -236,7 +238,7 @@ export function ChatInterface({ currentUserId }: ChatInterfaceProps) {
                 }}
                 className="text-indigo-600 hover:underline mt-2"
               >
-                Start a new one
+                {t('shared.chat.startNewConversation')}
               </button>
             </div>
           )}
@@ -256,7 +258,7 @@ export function ChatInterface({ currentUserId }: ChatInterfaceProps) {
               <div>
                 <div className="font-medium text-gray-900">{getRoomName(selectedRoom)}</div>
                 <div className="text-gray-500 text-sm">
-                  {selectedRoom.isGroup ? `${selectedRoom.members.length} members` : 'Online'}
+                  {selectedRoom.isGroup ? t('shared.chat.members', { count: selectedRoom.members.length }) : t('shared.chat.online')}
                 </div>
               </div>
             </div>
@@ -299,7 +301,7 @@ export function ChatInterface({ currentUserId }: ChatInterfaceProps) {
               </>
             ) : (
               <div className="flex items-center justify-center h-full text-gray-500">
-                No messages yet. Start the conversation!
+                {t('shared.chat.noMessages')}
               </div>
             )}
           </div>
@@ -329,7 +331,7 @@ export function ChatInterface({ currentUserId }: ChatInterfaceProps) {
         <div className="flex-1 flex items-center justify-center text-gray-500">
           <div className="text-center">
             <MessageSquare className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-            <p>Select a conversation to start messaging</p>
+             <p>{t('shared.chat.selectConversation')}</p>
           </div>
         </div>
       )}
@@ -339,7 +341,7 @@ export function ChatInterface({ currentUserId }: ChatInterfaceProps) {
         <div className="fixed inset-0 bg-black/40 backdrop-blur-md flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-md">
             <div className="p-6 border-b border-gray-200 flex items-center justify-between">
-              <h4 className="text-lg font-semibold">New Conversation</h4>
+              <h4 className="text-lg font-semibold">{t('shared.chat.newConversationTitle')}</h4>
               <button
                 onClick={() => {
                   setShowNewChat(false);
@@ -355,12 +357,12 @@ export function ChatInterface({ currentUserId }: ChatInterfaceProps) {
             <div className="p-6 space-y-4 max-h-96 overflow-y-auto">
               {selectedUsers.length > 1 && (
                 <div>
-                  <label className="block text-gray-700 font-medium mb-2">Group Name (optional)</label>
+                  <label className="block text-gray-700 font-medium mb-2">{t('shared.chat.groupNameLabel')}</label>
                   <input
                     type="text"
                     value={groupName}
                     onChange={(e) => setGroupName(e.target.value)}
-                    placeholder="Enter group name..."
+                    placeholder={t('shared.chat.groupNamePlaceholder')}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
                   />
                 </div>
@@ -368,7 +370,7 @@ export function ChatInterface({ currentUserId }: ChatInterfaceProps) {
 
               <div>
                 <label className="block text-gray-700 font-medium mb-2">
-                  Select participants ({selectedUsers.length} selected)
+                  {t('shared.chat.selectParticipantsLabel', { count: selectedUsers.length })}
                 </label>
                 <div className="space-y-2">
                   {availableUsers.map((user) => (
@@ -398,30 +400,30 @@ export function ChatInterface({ currentUserId }: ChatInterfaceProps) {
                       </div>
                     </label>
                   ))}
-                  {availableUsers.length === 0 && (
-                    <p className="text-gray-500 text-center py-4">No users available</p>
-                  )}
+                   {availableUsers.length === 0 && (
+                     <p className="text-gray-500 text-center py-4">{t('shared.chat.noUsersAvailable')}</p>
+                   )}
                 </div>
               </div>
             </div>
 
             <div className="p-6 border-t border-gray-200 flex gap-3">
-              <button
-                onClick={() => {
-                  setShowNewChat(false);
-                  setSelectedUsers([]);
-                  setGroupName('');
-                }}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
-              >
-                Cancel
-              </button>
+               <button
+                 onClick={() => {
+                   setShowNewChat(false);
+                   setSelectedUsers([]);
+                   setGroupName('');
+                 }}
+                 className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+               >
+                 {t('shared.chat.cancel')}
+               </button>
               <button
                 onClick={handleCreateRoom}
                 disabled={selectedUsers.length === 0}
                 className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50"
               >
-                Start Chat
+                {t('shared.chat.startChat')}
               </button>
             </div>
           </div>

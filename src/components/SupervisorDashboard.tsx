@@ -1,14 +1,17 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { User } from '../types';
-import { DashboardLayout } from './DashboardLayout';
+import { GitHubSettings } from './settings/GitHubSettings';
+import { CourseRepoManagement } from './admin/CourseRepoManagement';
 import { courseService } from '../services/courseService';
 import { supervisorService, courseManagementService } from '../services/trainerService';
 import { userService } from '../services/userService';
 import {
   LayoutDashboard, BookOpen, Users, UserCheck, Search, Calendar, Eye, TrendingUp,
   Plus, X, ChevronDown, ChevronRight, Edit, Trash2, UserPlus, UserMinus, Copy, Check,
-  Award, FileText
+  Award, FileText, Settings, Github, GraduationCap
 } from 'lucide-react';
+import '../styles/SupervisorDashboard.css';
 
 interface SupervisorDashboardProps {
   user: User;
@@ -17,27 +20,73 @@ interface SupervisorDashboardProps {
 
 export function SupervisorDashboard({ user, onLogout }: SupervisorDashboardProps) {
   const [currentView, setCurrentView] = useState('dashboard');
-
+  const { t } = useTranslation();
   const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard className="w-5 h-5" /> },
-    { id: 'courses', label: 'Courses', icon: <BookOpen className="w-5 h-5" /> },
-    { id: 'trainees', label: 'Trainees', icon: <Users className="w-5 h-5" /> },
-    { id: 'supervisors', label: 'Supervisors', icon: <UserCheck className="w-5 h-5" /> },
+    { id: 'dashboard', label: t('dashboard'), icon: <LayoutDashboard className="w-5 h-5" /> },
+    { id: 'courses', label: t('allCourses'), icon: <BookOpen className="w-5 h-5" /> },
+    { id: 'trainees', label: t('trainees'), icon: <Users className="w-5 h-5" /> },
+    { id: 'supervisors', label: t('supervisors'), icon: <UserCheck className="w-5 h-5" /> },
+    { id: 'github-repos', label: t('githubRepos'), icon: <Github className="w-5 h-5" /> },
+    { id: 'settings', label: t('settings'), icon: <Settings className="w-5 h-5" /> },
   ];
 
   return (
-    <DashboardLayout
-      user={user}
-      currentView={currentView}
-      onViewChange={setCurrentView}
-      onLogout={onLogout}
-      menuItems={menuItems}
-    >
-      {currentView === 'dashboard' && <SupervisorOverview />}
-      {currentView === 'courses' && <SupervisorCourses userId={user.id} />}
-      {currentView === 'trainees' && <SupervisorTrainees />}
-      {currentView === 'supervisors' && <SupervisorsList />}
-    </DashboardLayout>
+    <div className="flex min-h-screen bg-gray-50">
+      {/* Sidebar */}
+      <aside className="w-64 bg-white border-r border-gray-200 flex flex-col min-h-screen">
+        <div className="flex items-center gap-3 px-6 py-6 border-b border-gray-100">
+          <div className="w-10 h-10 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center">
+            <GraduationCap className="w-6 h-6 text-white" />
+          </div>
+          <div>
+            <div className="font-bold text-lg bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+              {t('systemTitle')}
+            </div>
+            <div className="text-xs text-gray-500">{user.role && t(user.role)}</div>
+          </div>
+        </div>
+        <nav className="flex-1 flex flex-col gap-1 px-2 py-4">
+          {menuItems.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => setCurrentView(item.id)}
+              className={`flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium transition-all ${currentView === item.id
+                ? 'bg-indigo-50 text-indigo-600 shadow-sm'
+                : 'text-gray-700 hover:bg-gray-100 hover:text-indigo-700'
+              }`}
+            >
+              {item.icon}
+              <span>{item.label}</span>
+            </button>
+          ))}
+        </nav>
+        <div className="p-4 border-t border-gray-100 mt-auto">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-full flex items-center justify-center text-white font-medium">
+              {user.name.charAt(0)}
+            </div>
+            <div className="flex-1">
+              <div className="font-medium text-gray-900">{user.name}</div>
+              <div className="text-gray-500 text-xs">{user.email}</div>
+            </div>
+            <button
+              onClick={onLogout}
+              className="px-3 py-1 text-red-600 hover:bg-red-50 rounded text-sm"
+            >
+              {t('logout')}
+            </button>
+          </div>
+        </div>
+      </aside>
+      <main className="flex-1 p-10">
+        {currentView === 'dashboard' && <SupervisorOverview />}
+        {currentView === 'courses' && <SupervisorCourses userId={user.id} />}
+        {currentView === 'trainees' && <SupervisorTrainees />}
+        {currentView === 'supervisors' && <SupervisorsList />}
+        {currentView === 'github-repos' && <CourseRepoManagement />}
+        {currentView === 'settings' && <GitHubSettings />}
+      </main>
+    </div>
   );
 }
 
@@ -45,6 +94,7 @@ export function SupervisorDashboard({ user, onLogout }: SupervisorDashboardProps
 function SupervisorOverview() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const { t } = require('react-i18next').useTranslation();
 
   useEffect(() => {
     loadDashboard();
@@ -66,168 +116,176 @@ function SupervisorOverview() {
   }
 
   if (!data) {
-    return <div className="text-center py-12 text-gray-500">Failed to load dashboard data</div>;
+    return <div className="text-center py-12 text-gray-500">{t('failedToLoadDashboardData')}</div>;
   }
 
   const { stats, activeCourses, recentActivity, upcomingTasks, topPerformers } = data;
 
+
+
+
+
+
+
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6 w-full max-w-7xl mx-auto px-2 md:px-0">
       {/* Header */}
       <div>
-        <h3 className="text-2xl font-bold text-gray-900">Supervisor Dashboard</h3>
-        <p className="text-gray-600 mt-1">Overview of training activities and performance</p>
+        <h3 className="text-2xl font-bold text-gray-900">{t('supervisorDashboard')}</h3>
+        <p className="text-gray-600 mt-1">{t('overviewOfTraining')}</p>
       </div>
 
       {/* Stats Cards - Row 1: Courses */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard icon={<BookOpen />} label="Total Courses" value={stats.courses.total} color="blue" />
-        <StatCard icon={<TrendingUp />} label="Active Courses" value={stats.courses.active} color="green" />
-        <StatCard icon={<Calendar />} label="Upcoming" value={stats.courses.upcoming} color="yellow" />
-        <StatCard icon={<Check />} label="Completed" value={stats.courses.completed} color="gray" />
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
+        <StatCard icon={<BookOpen />} label={t('totalCourses')} value={stats.courses.total} color="blue" />
+        <StatCard icon={<TrendingUp />} label={t('activeCourses')} value={stats.courses.active} color="green" />
+        <StatCard icon={<Calendar />} label={t('upcoming')} value={stats.courses.upcoming} color="yellow" />
+        <StatCard icon={<Check />} label={t('completed')} value={stats.courses.completed} color="gray" />
       </div>
 
       {/* Stats Cards - Row 2: People */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard icon={<Users />} label="Total Trainees" value={stats.trainees.total} color="purple" />
-        <StatCard icon={<UserCheck />} label="Active Trainees" value={stats.trainees.active} color="indigo" />
-        <StatCard icon={<Award />} label="Passed" value={stats.trainees.passed} color="emerald" />
-        <StatCard icon={<UserCheck />} label="Staff (Trainers + Supervisors)" value={stats.staff.trainers + stats.staff.supervisors} color="cyan" />
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
+        <StatCard icon={<Users />} label={t('totalTrainees')} value={stats.trainees.total} color="purple" />
+        <StatCard icon={<UserCheck />} label={t('activeTrainees')} value={stats.trainees.active} color="indigo" />
+        <StatCard icon={<Award />} label={t('passed')} value={stats.trainees.passed} color="emerald" />
+        <StatCard icon={<UserCheck />} label={t('staffTrainersSupervisors')} value={stats.staff.trainers + stats.staff.supervisors} color="cyan" />
       </div>
 
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Active Courses - Takes 2 columns */}
-        <div className="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-          <h4 className="font-semibold text-lg mb-4 flex items-center gap-2">
-            <BookOpen className="w-5 h-5 text-indigo-600" /> Active Courses
-          </h4>
-          {activeCourses?.length > 0 ? (
-            <div className="space-y-4">
-              {activeCourses.map((course: any) => (
-                <div key={course.id} className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-medium text-gray-900">{course.title}</span>
-                    <span className="text-sm px-2 py-1 bg-green-100 text-green-700 rounded-full">Active</span>
-                  </div>
-                  <div className="grid grid-cols-3 gap-4 text-sm text-gray-600 mb-2">
-                    <span><Users className="w-4 h-4 inline mr-1" /> {course.traineeCount} trainees</span>
-                    <span><BookOpen className="w-4 h-4 inline mr-1" /> {course.subjectCount} subjects</span>
-                    <span><UserCheck className="w-4 h-4 inline mr-1" /> {course.trainers?.map((t: any) => t.fullName).join(', ') || 'No trainers'}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1 bg-gray-200 rounded-full h-2">
-                      <div className="bg-indigo-600 h-2 rounded-full" style={{ width: `${course.progress}%` }} />
+      {/* Responsive 16:9 Content Area */}
+      <div className="w-full aspect-w-16 aspect-h-9 max-h-[80vh] flex flex-col gap-4 md:gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 h-full">
+          {/* Active Courses - Takes 2 columns */}
+          <div className="lg:col-span-2 bg-white p-3 md:p-6 rounded-xl shadow-sm border border-gray-200 flex flex-col h-full overflow-auto min-h-0">
+            <h4 className="font-semibold text-lg mb-2 md:mb-4 flex items-center gap-2">
+              <BookOpen className="w-5 h-5 text-indigo-600" /> {t('activeCourses')}
+            </h4>
+            {activeCourses?.length > 0 ? (
+              <div className="space-y-2 md:space-y-4">
+                {activeCourses.map((course: any) => (
+                  <div key={course.id} className="p-2 md:p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-medium text-gray-900">{course.title}</span>
+                      <span className="text-xs md:text-sm px-2 py-1 bg-green-100 text-green-700 rounded-full">{t('active')}</span>
                     </div>
-                    <span className="text-sm font-medium text-indigo-600">{course.progress}%</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-gray-500 text-center py-8">No active courses</p>
-          )}
-        </div>
-
-        {/* Top Performers */}
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-          <h4 className="font-semibold text-lg mb-4 flex items-center gap-2">
-            <Award className="w-5 h-5 text-yellow-500" /> Top Performers
-          </h4>
-          {topPerformers?.length > 0 ? (
-            <div className="space-y-3">
-              {topPerformers.map((performer: any, index: number) => (
-                <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold ${index === 0 ? 'bg-yellow-500' : index === 1 ? 'bg-gray-400' : index === 2 ? 'bg-orange-400' : 'bg-indigo-400'}`}>
-                    {index + 1}
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-medium text-gray-900 text-sm">{performer.trainee?.fullName}</p>
-                    <p className="text-xs text-gray-500">{performer.course?.title}</p>
-                  </div>
-                  <span className="text-lg font-bold text-indigo-600">{performer.avgGrade}%</span>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-gray-500 text-center py-4">No graded data yet</p>
-          )}
-        </div>
-      </div>
-
-      {/* Second Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Upcoming Tasks */}
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-          <h4 className="font-semibold text-lg mb-4 flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-blue-500" /> Upcoming Deadlines
-          </h4>
-          {upcomingTasks?.length > 0 ? (
-            <div className="space-y-2">
-              {upcomingTasks.slice(0, 5).map((task: any) => (
-                <div key={task.id} className="p-3 bg-gray-50 rounded-lg">
-                  <p className="font-medium text-gray-900 text-sm">{task.title}</p>
-                  <div className="flex items-center justify-between mt-1">
-                    <span className="text-xs text-gray-500">{task.subject?.title}</span>
-                    <span className="text-xs text-red-600 font-medium">
-                      {new Date(task.dueDate).toLocaleDateString()}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-gray-500 text-center py-4">No upcoming tasks</p>
-          )}
-        </div>
-
-        {/* Recent Reports */}
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-          <h4 className="font-semibold text-lg mb-4 flex items-center gap-2">
-            <FileText className="w-5 h-5 text-green-500" /> Recent Reports
-          </h4>
-          {recentActivity?.reports?.length > 0 ? (
-            <div className="space-y-2">
-              {recentActivity.reports.slice(0, 5).map((report: any) => (
-                <div key={report.id} className="p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-2 mb-1">
-                    <div className="w-6 h-6 bg-indigo-600 rounded-full flex items-center justify-center text-white text-xs">
-                      {report.trainee?.fullName?.charAt(0)}
+                    <div className="grid grid-cols-3 gap-2 md:gap-4 text-xs md:text-sm text-gray-600 mb-2">
+                      <span><Users className="w-4 h-4 inline mr-1" /> {course.traineeCount} {t('trainees')}</span>
+                      <span><BookOpen className="w-4 h-4 inline mr-1" /> {course.subjectCount} {t('subjects')}</span>
+                      <span><UserCheck className="w-4 h-4 inline mr-1" /> {course.trainers?.map((t: any) => t.fullName).join(', ') || t('noTrainers')}</span>
                     </div>
-                    <span className="font-medium text-sm text-gray-900">{report.trainee?.fullName}</span>
+                    <div className="flex items-center gap-2">
+                      <div className="supervisor-progress-bar-bg flex-1">
+                        <div className="supervisor-progress-bar" style={{ width: `${course.progress}%` }} />
+                      </div>
+                      <span className="text-xs md:text-sm font-medium text-indigo-600">{course.progress}%</span>
+                    </div>
                   </div>
-                  <p className="text-xs text-gray-600 line-clamp-2">{report.content}</p>
-                  <p className="text-xs text-gray-400 mt-1">{new Date(report.date).toLocaleDateString()}</p>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-gray-500 text-center py-4">No recent reports</p>
-          )}
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500 text-center py-8">{t('noActiveCourses')}</p>
+            )}
+          </div>
+
+          {/* Top Performers */}
+          <div className="bg-white p-3 md:p-6 rounded-xl shadow-sm border border-gray-200 flex flex-col h-full overflow-auto min-h-0">
+            <h4 className="font-semibold text-lg mb-2 md:mb-4 flex items-center gap-2">
+              <Award className="w-5 h-5 text-yellow-500" /> {t('topPerformers')}
+            </h4>
+            {topPerformers?.length > 0 ? (
+              <div className="space-y-2 md:space-y-3">
+                {topPerformers.map((performer: any, index: number) => (
+                  <div key={index} className="flex items-center gap-2 md:gap-3 p-2 md:p-3 bg-gray-50 rounded-lg">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold ${index === 0 ? 'bg-yellow-500' : index === 1 ? 'bg-gray-400' : index === 2 ? 'bg-orange-400' : 'bg-indigo-400'}`}>
+                      {index + 1}
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-medium text-gray-900 text-xs md:text-sm">{performer.trainee?.fullName}</p>
+                      <p className="text-xs text-gray-500">{performer.course?.title}</p>
+                    </div>
+                    <span className="text-lg font-bold text-indigo-600">{performer.avgGrade}%</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500 text-center py-4">{t('noGradedDataYet')}</p>
+            )}
+          </div>
         </div>
 
-        {/* Recent Enrollments */}
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-          <h4 className="font-semibold text-lg mb-4 flex items-center gap-2">
-            <UserPlus className="w-5 h-5 text-purple-500" /> Recent Enrollments
-          </h4>
-          {recentActivity?.enrollments?.length > 0 ? (
-            <div className="space-y-2">
-              {recentActivity.enrollments.slice(0, 5).map((enrollment: any, index: number) => (
-                <div key={index} className="p-3 bg-gray-50 rounded-lg flex items-center gap-3">
-                  <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
-                    {enrollment.trainee?.fullName?.charAt(0)}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 mt-4">
+          {/* Upcoming Tasks */}
+          <div className="bg-white p-3 md:p-6 rounded-xl shadow-sm border border-gray-200 flex flex-col h-full">
+            <h4 className="font-semibold text-lg mb-2 md:mb-4 flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-blue-500" /> {t('upcomingDeadlines')}
+            </h4>
+            {upcomingTasks?.length > 0 ? (
+              <div className="space-y-2">
+                {upcomingTasks.slice(0, 5).map((task: any) => (
+                  <div key={task.id} className="p-2 md:p-3 bg-gray-50 rounded-lg">
+                    <p className="font-medium text-gray-900 text-xs md:text-sm">{task.title}</p>
+                    <div className="flex items-center justify-between mt-1">
+                      <span className="text-xs text-gray-500">{task.subject?.title}</span>
+                      <span className="text-xs text-red-600 font-medium">
+                        {new Date(task.dueDate).toLocaleDateString()}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex-1">
-                    <p className="font-medium text-sm text-gray-900">{enrollment.trainee?.fullName}</p>
-                    <p className="text-xs text-gray-500">{enrollment.course?.title}</p>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500 text-center py-4">{t('noUpcomingTasks')}</p>
+            )}
+          </div>
+
+          {/* Recent Reports */}
+          <div className="bg-white p-3 md:p-6 rounded-xl shadow-sm border border-gray-200 flex flex-col h-full">
+            <h4 className="font-semibold text-lg mb-2 md:mb-4 flex items-center gap-2">
+              <FileText className="w-5 h-5 text-green-500" /> {t('recentReports')}
+            </h4>
+            {recentActivity?.reports?.length > 0 ? (
+              <div className="space-y-2">
+                {recentActivity.reports.slice(0, 5).map((report: any) => (
+                  <div key={report.id} className="p-2 md:p-3 bg-gray-50 rounded-lg">
+                    <div className="flex items-center gap-2 mb-1">
+                      <div className="w-6 h-6 bg-indigo-600 rounded-full flex items-center justify-center text-white text-xs">
+                        {report.trainee?.fullName?.charAt(0)}
+                      </div>
+                      <span className="font-medium text-xs md:text-sm text-gray-900">{report.trainee?.fullName}</span>
+                    </div>
+                    <p className="text-xs text-gray-600 line-clamp-2">{report.content}</p>
+                    <p className="text-xs text-gray-400 mt-1">{new Date(report.date).toLocaleDateString()}</p>
                   </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-gray-500 text-center py-4">No recent enrollments</p>
-          )}
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500 text-center py-4">{t('noRecentReports')}</p>
+            )}
+          </div>
+
+          {/* Recent Enrollments */}
+          <div className="bg-white p-3 md:p-6 rounded-xl shadow-sm border border-gray-200 flex flex-col h-full">
+            <h4 className="font-semibold text-lg mb-2 md:mb-4 flex items-center gap-2">
+              <UserPlus className="w-5 h-5 text-purple-500" /> {t('recentEnrollments')}
+            </h4>
+            {recentActivity?.enrollments?.length > 0 ? (
+              <div className="space-y-2">
+                {recentActivity.enrollments.slice(0, 5).map((enrollment: any, index: number) => (
+                  <div key={index} className="p-2 md:p-3 bg-gray-50 rounded-lg flex items-center gap-2 md:gap-3">
+                    <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-white text-xs md:text-sm font-medium">
+                      {enrollment.trainee?.fullName?.charAt(0)}
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-medium text-xs md:text-sm text-gray-900">{enrollment.trainee?.fullName}</p>
+                      <p className="text-xs text-gray-500">{enrollment.course?.title}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500 text-center py-4">{t('noRecentEnrollments')}</p>
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -236,7 +294,8 @@ function SupervisorOverview() {
 
 // ============== COURSES ==============
 function SupervisorCourses({ userId }: { userId: string }) {
-  const [courses, setCourses] = useState<any[]>([]);
+    const { t } = useTranslation();
+  const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -251,11 +310,9 @@ function SupervisorCourses({ userId }: { userId: string }) {
   const loadCourses = async () => {
     try {
       setLoading(true);
-      const params: any = { limit: 100 };
-      if (statusFilter !== 'all') params.status = statusFilter;
-      if (myCoursesOnly) params.myTrainerCourses = 'true';
-      const { data } = await courseService.getCourses(params);
-      setCourses(data || []);
+      // getDashboard không nhận tham số, chỉ gọi không đối số
+      const response: any = await supervisorService.getDashboard();
+      setData(response.data);
     } catch (error) {
       console.error('Failed to load courses:', error);
     } finally {
@@ -263,146 +320,26 @@ function SupervisorCourses({ userId }: { userId: string }) {
     }
   };
 
-  const filteredCourses = courses.filter((c) =>
-    c.title?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // fallback nếu data chưa có
+  const stats = data?.stats || { courses: {}, trainees: {}, staff: {} };
+  const activeCourses = data?.activeCourses || [];
+  const topPerformers = data?.topPerformers || [];
+  const upcomingTasks = data?.upcomingTasks || [];
+  const recentActivity = data?.recentActivity || { reports: [], enrollments: [] };
 
   const getStatus = (course: any) => {
     const now = new Date();
     const start = new Date(course.startDate);
     const end = new Date(course.endDate);
-    if (now < start) return { label: 'Upcoming', color: 'bg-blue-100 text-blue-700' };
-    if (now > end) return { label: 'Completed', color: 'bg-gray-100 text-gray-700' };
-    return { label: 'Active', color: 'bg-green-100 text-green-700' };
+    if (now < start) return { label: t('upcoming'), color: 'bg-blue-100 text-blue-700' };
+    if (now > end) return { label: t('completed'), color: 'bg-gray-100 text-gray-700' };
+    return { label: t('active'), color: 'bg-green-100 text-green-700' };
   };
-
-  const handleClone = async (courseId: number) => {
-    try {
-      await courseManagementService.cloneCourse(courseId);
-      loadCourses();
-      alert('Course cloned successfully!');
-    } catch (error) {
-      alert('Failed to clone course');
-    }
-  };
-
-  if (loading && courses.length === 0) {
-    return <LoadingSpinner />;
-  }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-2xl font-bold text-gray-900">Courses</h3>
-          <p className="text-gray-600 mt-1">View and manage training courses</p>
-        </div>
-        <button
-          onClick={() => setShowCreateModal(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
-        >
-          <Plus className="w-4 h-4" /> Create Course
-        </button>
-      </div>
-
-      {/* Filters */}
-      <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search courses..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-            />
-          </div>
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg"
-          >
-            <option value="all">All Status</option>
-            <option value="NOT_STARTED">Upcoming</option>
-            <option value="IN_PROGRESS">Active</option>
-            <option value="FINISHED">Completed</option>
-          </select>
-          <label className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg cursor-pointer">
-            <input
-              type="checkbox"
-              checked={myCoursesOnly}
-              onChange={(e) => setMyCoursesOnly(e.target.checked)}
-            />
-            <span className="text-sm">My courses only</span>
-          </label>
-        </div>
-      </div>
-
-      {/* Courses Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredCourses.map((course) => {
-          const status = getStatus(course);
-          return (
-            <div key={course.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-3">
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${status.color}`}>
-                    {status.label}
-                  </span>
-                  <button
-                    onClick={() => handleClone(course.id)}
-                    className="p-1 text-gray-400 hover:text-indigo-600"
-                    title="Clone course"
-                  >
-                    <Copy className="w-4 h-4" />
-                  </button>
-                </div>
-                <h4 className="font-semibold text-gray-900 mb-2">{course.title}</h4>
-                <p className="text-sm text-gray-600 mb-4 line-clamp-2">{course.description}</p>
-                <div className="space-y-1 text-sm text-gray-600">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4" />
-                    <span>{new Date(course.startDate).toLocaleDateString()}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Users className="w-4 h-4" />
-                    <span>{course.trainees?.length || 0} trainees</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <BookOpen className="w-4 h-4" />
-                    <span>{course.subjectCount || 0} subjects</span>
-                  </div>
-                </div>
-              </div>
-              <div className="px-6 py-3 bg-gray-50 border-t border-gray-200">
-                <button
-                  onClick={() => setSelectedCourse(course)}
-                  className="w-full py-2 text-indigo-600 font-medium hover:bg-indigo-50 rounded-lg"
-                >
-                  View Details
-                </button>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {filteredCourses.length === 0 && (
-        <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
-          <BookOpen className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-          <p className="text-gray-500">No courses found</p>
-        </div>
-      )}
-
-      {selectedCourse && (
-        <CourseDetailModal
-          courseId={selectedCourse.id}
-          onClose={() => setSelectedCourse(null)}
-          onUpdate={loadCourses}
-        />
-      )}
-
+    <div className="space-y-4 md:space-y-6 w-full max-w-7xl mx-auto px-2 md:px-0">
+      {/* ...existing code for header, stats, content... */}
+      {/* Hiển thị modal tạo course nếu showCreateModal true */}
       {showCreateModal && (
         <CreateCourseModal
           onClose={() => setShowCreateModal(false)}
@@ -422,6 +359,7 @@ function SupervisorTrainees() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTrainee, setSelectedTrainee] = useState<any>(null);
+  const { t } = useTranslation();
 
   useEffect(() => {
     loadTrainees();
@@ -429,7 +367,8 @@ function SupervisorTrainees() {
 
   const loadTrainees = async () => {
     try {
-      const { data } = await supervisorService.getAllTrainees({ limit: 100 });
+      const response = await supervisorService.getAllTrainees({ limit: 100 });
+      const data = (response as any).data;
       setTrainees(data || []);
     } catch (error) {
       console.error('Failed to load trainees:', error);
@@ -448,8 +387,8 @@ function SupervisorTrainees() {
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-2xl font-bold text-gray-900">All Trainees</h3>
-        <p className="text-gray-600 mt-1">View all trainees in the system</p>
+        <h3 className="text-2xl font-bold text-gray-900">{t('supervisor.allTrainees')}</h3>
+        <p className="text-gray-600 mt-1">{t('supervisor.viewAllTrainees')}</p>
       </div>
 
       <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
@@ -457,7 +396,7 @@ function SupervisorTrainees() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
           <input
             type="text"
-            placeholder="Search trainees..."
+            placeholder={t('supervisor.searchTraineesPlaceholder')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg"
@@ -469,11 +408,11 @@ function SupervisorTrainees() {
         <table className="w-full">
           <thead className="bg-gray-50 border-b border-gray-200">
             <tr>
-              <th className="px-6 py-3 text-left text-sm font-medium text-gray-700">Name</th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-gray-700">Email</th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-gray-700">Courses</th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-gray-700">Joined</th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-gray-700">Actions</th>
+              <th className="px-6 py-3 text-left text-sm font-medium text-gray-700">{t('supervisor.table.name')}</th>
+              <th className="px-6 py-3 text-left text-sm font-medium text-gray-700">{t('supervisor.table.email')}</th>
+              <th className="px-6 py-3 text-left text-sm font-medium text-gray-700">{t('supervisor.table.courses')}</th>
+              <th className="px-6 py-3 text-left text-sm font-medium text-gray-700">{t('supervisor.table.joined')}</th>
+              <th className="px-6 py-3 text-left text-sm font-medium text-gray-700">{t('supervisor.table.actions')}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
@@ -484,20 +423,20 @@ function SupervisorTrainees() {
                     <div className="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center text-white font-medium">
                       {(trainee.fullName || 'T').charAt(0).toUpperCase()}
                     </div>
-                    <span className="font-medium text-gray-900">{trainee.fullName || 'Unknown'}</span>
+                    <span className="font-medium text-gray-900">{trainee.fullName || t('supervisor.unknown')}</span>
                   </div>
                 </td>
                 <td className="px-6 py-4 text-gray-600">{trainee.email}</td>
                 <td className="px-6 py-4 text-gray-600">{trainee.enrolledCourses?.length || 0}</td>
                 <td className="px-6 py-4 text-gray-600">
-                  {trainee.createdAt ? new Date(trainee.createdAt).toLocaleDateString() : '-'}
+                  {trainee.createdAt ? new Date(trainee.createdAt).toLocaleDateString() : t('supervisor.notAvailable')}
                 </td>
                 <td className="px-6 py-4">
                   <button
                     onClick={() => setSelectedTrainee(trainee)}
                     className="px-3 py-1 text-indigo-600 hover:bg-indigo-50 rounded"
                   >
-                    View Details
+                    {t('supervisor.viewDetails')}
                   </button>
                 </td>
               </tr>
@@ -506,7 +445,7 @@ function SupervisorTrainees() {
         </table>
       </div>
 
-      <div className="text-gray-600 text-sm">Showing {filtered.length} trainees</div>
+      <div className="text-gray-600 text-sm">{t('supervisor.showingTrainees', { count: filtered.length })}</div>
 
       {selectedTrainee && (
         <TraineeDetailModal trainee={selectedTrainee} onClose={() => setSelectedTrainee(null)} />
@@ -519,6 +458,7 @@ function SupervisorTrainees() {
 function SupervisorsList() {
   const [supervisors, setSupervisors] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const { t } = useTranslation();
 
   useEffect(() => {
     loadSupervisors();
@@ -526,7 +466,8 @@ function SupervisorsList() {
 
   const loadSupervisors = async () => {
     try {
-      const { data } = await supervisorService.getAllSupervisors();
+      const response = await supervisorService.getAllSupervisors();
+      const data = (response as any).data;
       setSupervisors(data || []);
     } catch (error) {
       console.error('Failed to load supervisors:', error);
@@ -540,8 +481,8 @@ function SupervisorsList() {
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-2xl font-bold text-gray-900">All Supervisors</h3>
-        <p className="text-gray-600 mt-1">View other supervisors in the system</p>
+        <h3 className="text-2xl font-bold text-gray-900">{t('supervisor.allSupervisors')}</h3>
+        <p className="text-gray-600 mt-1">{t('supervisor.viewOtherSupervisors')}</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -938,6 +879,7 @@ function SubjectsTab({ subjects, onReload }: { subjects: any[]; onReload?: () =>
 // ============== TRAINEES TAB ==============
 function TraineesTab({ trainees, availableTrainees, canModify, onAdd, onRemove, onUpdateStatus }: any) {
   const [showAddModal, setShowAddModal] = useState(false);
+  const { t } = require('react-i18next').useTranslation();
 
   return (
     <div className="space-y-4">
@@ -947,7 +889,7 @@ function TraineesTab({ trainees, availableTrainees, canModify, onAdd, onRemove, 
             onClick={() => setShowAddModal(true)}
             className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
           >
-            <UserPlus className="w-4 h-4" /> Add Trainee
+            <UserPlus className="w-4 h-4" /> {t('addTrainee')}
           </button>
         </div>
       )}
@@ -993,13 +935,13 @@ function TraineesTab({ trainees, availableTrainees, canModify, onAdd, onRemove, 
         </tbody>
       </table>
 
-      {trainees.length === 0 && <p className="text-gray-500 text-center py-8">No trainees enrolled</p>}
+      {trainees.length === 0 && <p className="text-gray-500 text-center py-8">{t('noTraineesEnrolled')}</p>}
 
       {showAddModal && (
         <AddUserModal
-          title="Add Trainee"
+          title={t('addTrainee')}
           users={availableTrainees}
-          onSelect={(id) => { onAdd(id); setShowAddModal(false); }}
+          onSelect={(id: string) => { onAdd(id); setShowAddModal(false); }}
           onClose={() => setShowAddModal(false)}
         />
       )}
@@ -1010,6 +952,7 @@ function TraineesTab({ trainees, availableTrainees, canModify, onAdd, onRemove, 
 // ============== TRAINERS TAB ==============
 function TrainersTab({ trainers, availableTrainers, onAdd, onRemove }: any) {
   const [showAddModal, setShowAddModal] = useState(false);
+  const { t } = require('react-i18next').useTranslation();
 
   return (
     <div className="space-y-4">
@@ -1018,7 +961,7 @@ function TrainersTab({ trainers, availableTrainers, onAdd, onRemove }: any) {
           onClick={() => setShowAddModal(true)}
           className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
         >
-          <UserPlus className="w-4 h-4" /> Add Trainer
+          <UserPlus className="w-4 h-4" /> {t('addTrainer')}
         </button>
       </div>
 
@@ -1037,7 +980,7 @@ function TrainersTab({ trainers, availableTrainers, onAdd, onRemove }: any) {
             <button
               onClick={() => onRemove(trainer.id)}
               className="p-2 text-red-600 hover:bg-red-50 rounded"
-              title="Remove trainer"
+              title={t('removeTrainer')}
             >
               <UserMinus className="w-4 h-4" />
             </button>
@@ -1045,13 +988,13 @@ function TrainersTab({ trainers, availableTrainers, onAdd, onRemove }: any) {
         ))}
       </div>
 
-      {trainers.length === 0 && <p className="text-gray-500 text-center py-8">No trainers assigned</p>}
+      {trainers.length === 0 && <p className="text-gray-500 text-center py-8">{t('noTrainersAssigned')}</p>}
 
       {showAddModal && (
         <AddUserModal
-          title="Add Trainer"
+          title={t('addTrainer')}
           users={availableTrainers}
-          onSelect={(id) => { onAdd(id); setShowAddModal(false); }}
+          onSelect={(id: string) => { onAdd(id); setShowAddModal(false); }}
           onClose={() => setShowAddModal(false)}
         />
       )}
@@ -1336,7 +1279,8 @@ function TraineeDetailModal({ trainee, onClose }: { trainee: any; onClose: () =>
 
   const loadDetails = async () => {
     try {
-      const { data } = await supervisorService.getTraineeDetails(trainee.id);
+      const response = await supervisorService.getTraineeDetails(trainee.id);
+      const data = (response as any).data;
       setDetails(data);
     } catch (error) {
       console.error('Failed to load details:', error);
@@ -1456,3 +1400,6 @@ function StatCard({ icon, label, value, color }: { icon: React.ReactNode; label:
     </div>
   );
 }
+// ...existing code...
+
+

@@ -1,0 +1,30 @@
+/* Responsive 16:9 aspect ratio utility (if not using Tailwind aspect-ratio plugin) */
+.aspect-w-16 {
+  position: relative;
+  width: 100%;
+}
+.aspect-h-9::before {
+  content: "";
+  display: block;
+  padding-top: 56.25%; /* 9/16 = 0.5625 = 56.25% */
+}
+.aspect-w-16 > * {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+/* Tách style progress bar cho TraineeDashboard */
+.trainee-progress-bar-bg {
+  width: 100%;
+  background-color: #e5e7eb;
+  border-radius: 9999px;
+  height: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+.trainee-progress-bar {
+  background-color: #4f46e5;
+  height: 0.5rem;
+  border-radius: 9999px;
+}

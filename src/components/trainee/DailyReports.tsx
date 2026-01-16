@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Plus, Search, Calendar, FileText, Loader2, Trash2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { api } from '../../lib/apiClient';
 
 interface DailyReportsProps {
@@ -25,6 +26,7 @@ export function DailyReports({ traineeId }: DailyReportsProps) {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const { t } = useTranslation();
 
   useEffect(() => {
     loadReports();
@@ -53,14 +55,14 @@ export function DailyReports({ traineeId }: DailyReportsProps) {
   };
 
   const handleDelete = async (reportId: number) => {
-    if (!confirm('Are you sure you want to delete this report?')) return;
+    if (!confirm(t('traineeReports.deleteConfirm'))) return;
 
     try {
       await api.delete(`/daily-reports/${reportId}`);
       setReports(reports.filter(r => r.id !== reportId));
     } catch (error) {
       console.error('Failed to delete report:', error);
-      alert('Failed to delete report');
+      alert(t('traineeReports.failedDelete'));
     }
   };
 
@@ -80,15 +82,15 @@ export function DailyReports({ traineeId }: DailyReportsProps) {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-2xl font-bold text-gray-900">Daily Reports</h3>
-          <p className="text-gray-600 mt-1">Track your learning progress</p>
+          <h3 className="text-2xl font-bold text-gray-900">{t('traineeReports.title')}</h3>
+          <p className="text-gray-600 mt-1">{t('traineeReports.subtitle')}</p>
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
           className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
         >
           <Plus className="w-4 h-4" />
-          New Report
+          {t('traineeReports.newReport')}
         </button>
       </div>
 
@@ -97,7 +99,7 @@ export function DailyReports({ traineeId }: DailyReportsProps) {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
           <input
             type="text"
-            placeholder="Search reports..."
+            placeholder={t('traineeReports.searchPlaceholder')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
@@ -137,7 +139,7 @@ export function DailyReports({ traineeId }: DailyReportsProps) {
                         <button
                           onClick={() => handleDelete(report.id)}
                           className="p-1 text-gray-400 hover:text-red-600"
-                          title="Delete report"
+                          title={t('deleteReport')}
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -147,7 +149,7 @@ export function DailyReports({ traineeId }: DailyReportsProps) {
                     <p className="text-gray-600 whitespace-pre-wrap">{report.content}</p>
 
                     <div className="text-gray-400 text-sm mt-3">
-                      Submitted {new Date(report.createdAt).toLocaleString()}
+                      {t('traineeReports.submitted', { date: new Date(report.createdAt).toLocaleString() })}
                     </div>
                   </div>
                 </div>
@@ -157,13 +159,13 @@ export function DailyReports({ traineeId }: DailyReportsProps) {
         ) : (
           <div className="text-center py-12 bg-white rounded-xl border border-gray-200">
             <FileText className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-500">No daily reports found</p>
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="text-indigo-600 hover:underline mt-2"
-            >
-              Create your first report
-            </button>
+            <p className="text-gray-500">{t('traineeReports.noReports')}</p>
+              <button
+                onClick={() => setShowCreateModal(true)}
+                className="text-indigo-600 hover:underline mt-2"
+              >
+                {t('traineeReports.createFirstReport')}
+              </button>
           </div>
         )}
       </div>
@@ -187,6 +189,7 @@ function CreateReportModal({ courses, onClose, onReportCreated }: {
   onClose: () => void;
   onReportCreated: (report: Report) => void;
 }) {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
     content: '',
@@ -206,7 +209,7 @@ function CreateReportModal({ courses, onClose, onReportCreated }: {
       });
       onReportCreated(response.data);
     } catch (err: any) {
-      setError(err.message || 'Failed to create report');
+      setError(err.message || t('traineeReports.failedCreate'));
     } finally {
       setSubmitting(false);
     }
@@ -216,8 +219,8 @@ function CreateReportModal({ courses, onClose, onReportCreated }: {
     <div className="fixed inset-0 bg-black/40 backdrop-blur-md flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl">
         <div className="p-6 border-b border-gray-200">
-          <h4 className="text-lg font-semibold">Submit Daily Report</h4>
-          <p className="text-gray-600 mt-1">Document your learning progress for today</p>
+          <h4 className="text-lg font-semibold">{t('traineeReports.submitTitle')}</h4>
+          <p className="text-gray-600 mt-1">{t('traineeReports.submitSubtitle')}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
@@ -226,7 +229,7 @@ function CreateReportModal({ courses, onClose, onReportCreated }: {
           )}
 
           <div>
-            <label className="block text-gray-700 font-medium mb-2">Date *</label>
+            <label className="block text-gray-700 font-medium mb-2">{t('traineeReports.dateLabel')}</label>
             <input
               type="date"
               value={formData.date}
@@ -237,13 +240,13 @@ function CreateReportModal({ courses, onClose, onReportCreated }: {
           </div>
 
           <div>
-            <label className="block text-gray-700 font-medium mb-2">Report Content *</label>
+            <label className="block text-gray-700 font-medium mb-2">{t('traineeReports.contentLabel')}</label>
             <textarea
               value={formData.content}
               onChange={(e) => setFormData({ ...formData, content: e.target.value })}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               rows={10}
-              placeholder="Describe what you learned today, challenges you faced, and tasks you completed..."
+              placeholder={t('traineeReports.contentPlaceholder')}
               required
             />
           </div>
@@ -255,7 +258,7 @@ function CreateReportModal({ courses, onClose, onReportCreated }: {
               disabled={submitting}
               className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50"
             >
-              Cancel
+              {t('traineeReports.cancel')}
             </button>
             <button
               type="submit"
@@ -263,7 +266,7 @@ function CreateReportModal({ courses, onClose, onReportCreated }: {
               className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
-              Submit Report
+              {t('traineeReports.submit')}
             </button>
           </div>
         </form>

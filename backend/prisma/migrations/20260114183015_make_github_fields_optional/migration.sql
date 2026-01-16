@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "PullRequest" ALTER COLUMN "prNumber" DROP NOT NULL,
+ALTER COLUMN "prUrl" DROP NOT NULL,
+ALTER COLUMN "repoName" DROP NOT NULL;

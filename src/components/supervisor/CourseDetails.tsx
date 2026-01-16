@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { ArrowLeft, Users, Plus, UserMinus, Loader2, BookOpen, Search } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { api } from '../../lib/apiClient';
 
 interface Course {
@@ -32,6 +33,7 @@ interface Subject {
 }
 
 export function CourseDetails({ course, onBack }: CourseDetailsProps) {
+  const { t } = useTranslation();
   const [trainees, setTrainees] = useState<Trainee[]>([]);
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [loading, setLoading] = useState(true);
@@ -95,21 +97,21 @@ export function CourseDetails({ course, onBack }: CourseDetailsProps) {
       setSelectedTrainees([]);
     } catch (error) {
       console.error('Failed to add trainees:', error);
-      alert('Failed to add trainees');
+      alert(t('supervisor.courseDetails.failedAddTrainees'));
     } finally {
       setAdding(false);
     }
   };
 
   const handleRemoveTrainee = async (traineeId: number) => {
-    if (!confirm('Are you sure you want to remove this trainee?')) return;
+    if (!confirm(t('supervisor.courseDetails.removeConfirm'))) return;
 
     try {
       await api.delete(`/courses/${course.id}/trainees/${traineeId}`);
       setTrainees(trainees.filter(t => t.id !== traineeId));
     } catch (error) {
       console.error('Failed to remove trainee:', error);
-      alert('Failed to remove trainee');
+      alert(t('supervisor.courseDetails.failedRemoveTrainee'));
     }
   };
 
@@ -143,7 +145,7 @@ export function CourseDetails({ course, onBack }: CourseDetailsProps) {
         className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
       >
         <ArrowLeft className="w-4 h-4" />
-        Back to Courses
+        {t('supervisor.courseDetails.back')}
       </button>
 
       <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
@@ -152,19 +154,19 @@ export function CourseDetails({ course, onBack }: CourseDetailsProps) {
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div>
-            <div className="text-gray-600 text-sm">Status</div>
-            <div className="text-gray-900 capitalize font-medium">{course.status.replace('_', ' ')}</div>
+            <div className="text-gray-600 text-sm">{t('supervisor.courseDetails.status')}</div>
+              <div className="text-gray-900 capitalize font-medium">{course.status.replace('_', ' ')}</div>
           </div>
           <div>
-            <div className="text-gray-600 text-sm">Trainees</div>
+              <div className="text-gray-600 text-sm">{t('supervisor.courseDetails.trainees')}</div>
             <div className="text-gray-900 font-medium">{trainees.length}</div>
           </div>
           <div>
-            <div className="text-gray-600 text-sm">Subjects</div>
+              <div className="text-gray-600 text-sm">{t('supervisor.courseDetails.subjects')}</div>
             <div className="text-gray-900 font-medium">{subjects.length}</div>
           </div>
           <div>
-            <div className="text-gray-600 text-sm">Created</div>
+              <div className="text-gray-600 text-sm">{t('supervisor.courseDetails.created')}</div>
             <div className="text-gray-900 font-medium">{new Date(course.createdAt).toLocaleDateString()}</div>
           </div>
         </div>
@@ -174,7 +176,7 @@ export function CourseDetails({ course, onBack }: CourseDetailsProps) {
       <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
         <h4 className="font-semibold text-lg mb-4 flex items-center gap-2">
           <BookOpen className="w-5 h-5 text-indigo-600" />
-          Course Subjects ({subjects.length})
+          {t('supervisor.courseDetails.courseSubjects', { count: subjects.length })}
         </h4>
         {subjects.length > 0 ? (
           <div className="space-y-3">
@@ -200,7 +202,7 @@ export function CourseDetails({ course, onBack }: CourseDetailsProps) {
           </div>
         ) : (
           <div className="text-center py-8 text-gray-500">
-            No subjects added yet
+            {t('supervisor.courseDetails.noSubjects')}
           </div>
         )}
       </div>
@@ -228,6 +230,7 @@ export function CourseDetails({ course, onBack }: CourseDetailsProps) {
           <div className="space-y-2">
             {trainees.map((trainee) => (
               <div key={trainee.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+import { useTranslation } from 'react-i18next';
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-orange-600 rounded-full flex items-center justify-center text-white font-medium">
                     {trainee.fullName?.charAt(0) || '?'}
@@ -241,10 +244,11 @@ export function CourseDetails({ course, onBack }: CourseDetailsProps) {
                   <span className={`px-2 py-1 rounded text-sm ${getStatusBadge(trainee.status)}`}>
                     {trainee.status}
                   </span>
-                  <button
+            const { t } = useTranslation();
+                    <button
                     onClick={() => handleRemoveTrainee(trainee.id)}
                     className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
-                    title="Remove trainee"
+                    title={t('removeTrainee')}
                   >
                     <UserMinus className="w-4 h-4" />
                   </button>
@@ -264,8 +268,8 @@ export function CourseDetails({ course, onBack }: CourseDetailsProps) {
         <div className="fixed inset-0 bg-black/40 backdrop-blur-md flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-lg">
             <div className="p-6 border-b border-gray-200">
-              <h4 className="text-lg font-semibold">Add Trainees to Course</h4>
-              <p className="text-gray-600 text-sm mt-1">Select trainees to enroll in this course</p>
+                <h4 className="text-lg font-semibold">{t('supervisor.courseDetails.addTraineesTitle')}</h4>
+                <p className="text-gray-600 text-sm mt-1">{t('supervisor.courseDetails.selectTraineesHint')}</p>
             </div>
 
             <div className="p-4 border-b border-gray-200">
@@ -273,7 +277,7 @@ export function CourseDetails({ course, onBack }: CourseDetailsProps) {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Search trainees..."
+                  placeholder={t('supervisor.courseDetails.searchTraineesPlaceholder')}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
@@ -319,32 +323,32 @@ export function CourseDetails({ course, onBack }: CourseDetailsProps) {
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-8 text-gray-500">
-                  No available trainees found
-                </div>
-              )}
+                  <div className="text-center py-8 text-gray-500">
+                    {t('supervisor.courseDetails.noAvailableTrainees')}
+                  </div>
+                )}
             </div>
 
             <div className="p-4 border-t border-gray-200 flex gap-3">
-              <button
-                onClick={() => {
-                  setShowAddTrainee(false);
-                  setSelectedTrainees([]);
-                  setSearchTerm('');
-                }}
-                disabled={adding}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleAddTrainees}
-                disabled={selectedTrainees.length === 0 || adding}
-                className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 flex items-center justify-center gap-2"
-              >
-                {adding && <Loader2 className="w-4 h-4 animate-spin" />}
-                Add {selectedTrainees.length > 0 ? `(${selectedTrainees.length})` : ''}
-              </button>
+                <button
+                  onClick={() => {
+                    setShowAddTrainee(false);
+                    setSelectedTrainees([]);
+                    setSearchTerm('');
+                  }}
+                  disabled={adding}
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                >
+                  {t('supervisor.courseDetails.cancel')}
+                </button>
+                <button
+                  onClick={handleAddTrainees}
+                  disabled={selectedTrainees.length === 0 || adding}
+                  className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {adding && <Loader2 className="w-4 h-4 animate-spin" />}
+                  {t('supervisor.courseDetails.addTraineesButton', { count: selectedTrainees.length })}
+                </button>
             </div>
           </div>
         </div>

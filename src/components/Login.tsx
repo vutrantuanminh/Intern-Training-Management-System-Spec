@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import '../styles/Login.css';
 import { authService } from '../services/authService';
 import { auth } from '../config/api';
 import { api } from '../lib/apiClient';
@@ -9,6 +11,7 @@ interface LoginProps {
 }
 
 export function Login({ onLogin }: LoginProps) {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -49,7 +52,7 @@ export function Login({ onLogin }: LoginProps) {
         role: role as any,
       });
     } catch (err: any) {
-      setError(err.message || 'Login failed. Please check your credentials.');
+      setError(err.message || t('loginFailedDefault'));
     } finally {
       setLoading(false);
     }
@@ -57,100 +60,85 @@ export function Login({ onLogin }: LoginProps) {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center p-4"
-      style={{
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        fontFamily: "'Poppins', sans-serif",
-      }}
+      className="min-h-screen flex items-center justify-center p-4 login-bg"
     >
       {/* Floating Orbs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute w-72 h-72 bg-pink-400/25 rounded-full blur-3xl top-10 left-10"></div>
-        <div className="absolute w-80 h-80 bg-blue-400/25 rounded-full blur-3xl top-20 right-20"></div>
-        <div className="absolute w-96 h-96 bg-purple-400/25 rounded-full blur-3xl bottom-10 left-1/3"></div>
+        <div className="floating-orb-pink"></div>
+        <div className="floating-orb-blue"></div>
+        <div className="floating-orb-purple"></div>
       </div>
 
       {/* Login Card */}
       <div className="relative z-10 w-full max-w-md">
-        <div
-          className="bg-white/10 backdrop-blur-2xl p-10 border border-white/20"
-          style={{ borderRadius: '32px' }}
-        >
+        <div className="login-card">
           {/* Logo */}
           <div className="flex justify-center mb-8">
-            <div
-              className="w-20 h-20 bg-white/15 backdrop-blur flex items-center justify-center"
-              style={{ borderRadius: '24px' }}
-            >
+            <div className="login-logo">
               <GraduationCap className="w-10 h-10 text-white" />
             </div>
           </div>
 
           <h1
-            className="text-3xl font-semibold text-white text-center mb-2"
-            style={{ fontFamily: "'Poppins', sans-serif" }}
+            className="text-3xl font-semibold text-white text-center mb-2 login-title"
           >
-            Welcome Back
+            {t('welcomeBack')}
           </h1>
-          <p className="text-white/60 text-center text-sm mb-10">Sign in to your account</p>
+          <p className="text-white/60 text-center text-sm mb-10">{t('signInToYourAccount')}</p>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block text-white/80 text-sm font-medium mb-2">Email</label>
+              <label className="block text-white/80 text-sm font-medium mb-2">{t('email')}</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={loading}
-                className="w-full px-5 py-4 bg-white/10 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:border-white/50 focus:bg-white/15 transition-all"
-                style={{ borderRadius: '16px', fontSize: '15px' }}
-                placeholder="you@example.com"
+                className="w-full px-5 py-4 bg-white/10 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:border-white/50 focus:bg-white/15 transition-all login-input"
+                placeholder={t('emailPlaceholder')}
                 required
               />
             </div>
 
             <div>
-              <label className="block text-white/80 text-sm font-medium mb-2">Password</label>
+              <label className="block text-white/80 text-sm font-medium mb-2">{t('password')}</label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={loading}
-                className="w-full px-5 py-4 bg-white/10 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:border-white/50 focus:bg-white/15 transition-all"
-                style={{ borderRadius: '16px', fontSize: '15px' }}
-                placeholder="••••••••"
+                className="w-full px-5 py-4 bg-white/10 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:border-white/50 focus:bg-white/15 transition-all login-input"
+                placeholder={t('passwordPlaceholder')}
                 required
               />
             </div>
 
             {error && (
               <div
-                className="bg-red-500/20 text-white text-sm p-4 border border-red-400/30"
-                style={{ borderRadius: '16px' }}
+                className="bg-red-500/20 text-white text-sm p-4 border border-red-400/30 login-error-box"
               >
-                {error}
+                {t(error) || error}
               </div>
             )}
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-amber-400 to-orange-500 text-white py-4 font-semibold hover:from-amber-500 hover:to-orange-600 transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-xl"
-              style={{ borderRadius: '16px', fontSize: '16px' }}
+              className="w-full bg-gradient-to-r from-amber-400 to-orange-500 text-white py-4 font-semibold hover:from-amber-500 hover:to-orange-600 transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-xl login-btn"
             >
               {loading ? (
                 <>
                   <Loader2 className="w-5 h-5 animate-spin" />
-                  Signing in...
+                  {t('signingIn')}
                 </>
               ) : (
-                'Sign In'
+                t('signIn')
               )}
             </button>
           </form>
 
           <p className="text-center text-white/40 text-xs mt-8">
-            © 2024 Training Management System
+            © 2024 {t('systemTitle')}
           </p>
         </div>
       </div>

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Course, Subject } from '../../types';
 import { mockUsers } from '../../data/mockData';
 import { Plus, Trash2 } from 'lucide-react';
@@ -10,6 +11,7 @@ interface CreateCourseModalProps {
 }
 
 export function CreateCourseModal({ onClose, onCourseCreated, creatorId }: CreateCourseModalProps) {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -41,7 +43,7 @@ export function CreateCourseModal({ onClose, onCourseCreated, creatorId }: Creat
     e.preventDefault();
     
     if (subjects.some(s => !s.name.trim())) {
-      alert('All subjects must have a name');
+      alert(t('supervisor.createCourse.subjectsValidation'));
       return;
     }
 
@@ -62,17 +64,17 @@ export function CreateCourseModal({ onClose, onCourseCreated, creatorId }: Creat
     <div className="fixed inset-0 bg-black/40 backdrop-blur-md flex items-center justify-center p-4 z-50 overflow-y-auto">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl my-8">
         <div className="p-6 border-b border-gray-200">
-          <h3>Create New Course</h3>
-          <p className="text-gray-600 mt-1">A course must contain at least one subject</p>
+          <h3>{t('supervisor.createCourse.title')}</h3>
+          <p className="text-gray-600 mt-1">{t('supervisor.createCourse.note')}</p>
         </div>
         
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {/* Course Details */}
           <div className="space-y-4">
-            <h4>Course Information</h4>
+            <h4>{t('supervisor.createCourse.infoTitle')}</h4>
             
             <div>
-              <label className="block text-gray-700 mb-2">Course Name *</label>
+              <label className="block text-gray-700 mb-2">{t('supervisor.createCourse.courseNameLabel')}</label>
               <input
                 type="text"
                 value={formData.name}
@@ -83,7 +85,7 @@ export function CreateCourseModal({ onClose, onCourseCreated, creatorId }: Creat
             </div>
 
             <div>
-              <label className="block text-gray-700 mb-2">Description *</label>
+              <label className="block text-gray-700 mb-2">{t('supervisor.createCourse.descriptionLabel')}</label>
               <textarea
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -94,13 +96,13 @@ export function CreateCourseModal({ onClose, onCourseCreated, creatorId }: Creat
             </div>
 
             <div>
-              <label className="block text-gray-700 mb-2">Assign Trainer (Optional)</label>
+              <label className="block text-gray-700 mb-2">{t('supervisor.createCourse.assignTrainerLabel')}</label>
               <select
                 value={formData.trainerId}
                 onChange={(e) => setFormData({ ...formData, trainerId: e.target.value })}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               >
-                <option value="">Select a trainer...</option>
+                <option value="">{t('supervisor.createCourse.selectTrainerPlaceholder')}</option>
                 {trainers.map((trainer) => (
                   <option key={trainer.id} value={trainer.id}>
                     {trainer.name} ({trainer.email})
@@ -113,14 +115,14 @@ export function CreateCourseModal({ onClose, onCourseCreated, creatorId }: Creat
           {/* Subjects */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h4>Subjects *</h4>
+              <h4>{t('supervisor.createCourse.subjectsTitle')}</h4>
               <button
                 type="button"
                 onClick={handleAddSubject}
                 className="flex items-center gap-2 px-3 py-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100"
               >
                 <Plus className="w-4 h-4" />
-                Add Subject
+                {t('supervisor.createCourse.addSubject')}
               </button>
             </div>
 
@@ -128,7 +130,7 @@ export function CreateCourseModal({ onClose, onCourseCreated, creatorId }: Creat
               {subjects.map((subject, index) => (
                 <div key={index} className="p-4 border border-gray-200 rounded-lg space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-700">Subject {index + 1}</span>
+                    <span className="text-gray-700">{t('supervisor.createCourse.subjectLabel')} {index + 1}</span>
                     {subjects.length > 1 && (
                       <button
                         type="button"
@@ -141,25 +143,25 @@ export function CreateCourseModal({ onClose, onCourseCreated, creatorId }: Creat
                   </div>
 
                   <div>
-                    <label className="block text-gray-700 mb-2 text-sm">Subject Name *</label>
+                    <label className="block text-gray-700 mb-2 text-sm">{t('supervisor.createCourse.subjectNameLabel')}</label>
                     <input
                       type="text"
                       value={subject.name}
                       onChange={(e) => handleSubjectChange(index, 'name', e.target.value)}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                      placeholder="e.g., JavaScript Basics"
+                      placeholder={t('supervisor.createCourse.subjectPlaceholder')}
                       required
                     />
                   </div>
 
                   <div>
-                    <label className="block text-gray-700 mb-2 text-sm">Subject Description</label>
+                    <label className="block text-gray-700 mb-2 text-sm">{t('supervisor.createCourse.subjectDescriptionLabel')}</label>
                     <textarea
                       value={subject.description}
                       onChange={(e) => handleSubjectChange(index, 'description', e.target.value)}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                       rows={2}
-                      placeholder="Brief description of this subject..."
+                      placeholder={t('supervisor.createCourse.subjectDescriptionPlaceholder')}
                     />
                   </div>
                 </div>
@@ -173,13 +175,13 @@ export function CreateCourseModal({ onClose, onCourseCreated, creatorId }: Creat
               onClick={onClose}
               className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
             >
-              Cancel
+              {t('supervisor.createCourse.cancel')}
             </button>
             <button
               type="submit"
               className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
             >
-              Create Course
+              {t('supervisor.createCourse.createButton')}
             </button>
           </div>
         </form>

@@ -1,4 +1,5 @@
 import { useState, FormEvent } from 'react';
+import '../styles/LoginPage.css';
 import { useAuth } from '../hooks/useAuth';
 import { GraduationCap, Loader2 } from 'lucide-react';
 
@@ -26,11 +27,7 @@ export function LoginPage() {
 
     return (
         <div
-            className="min-h-screen relative overflow-hidden flex items-center justify-center"
-            style={{
-                background: 'linear-gradient(135deg, #ff00cc 0%, #6600ff 50%, #00ccff 100%)',
-                fontFamily: "'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-            }}
+            className="min-h-screen relative overflow-hidden flex items-center justify-center loginpage-bg"
         >
             {/* Floating Orbs - Nhiều layer, animate chậm */}
             <div className="absolute inset-0 overflow-hidden">
@@ -44,8 +41,7 @@ export function LoginPage() {
             {/* Glass Card - Blur cực mạnh, bg mờ hơn */}
             <div className="relative w-full max-w-md z-10">
                 <div
-                    className="bg-white/4 backdrop-blur-3xl rounded-3xl p-12 border border-white/20"
-                    style={{ boxShadow: '0 32px 80px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.2)' }}
+                    className="bg-white/4 backdrop-blur-3xl rounded-3xl p-12 border border-white/20 loginpage-card"
                 >
                     {/* Logo */}
                     <div className="flex justify-center mb-10">

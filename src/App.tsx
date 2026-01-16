@@ -8,6 +8,10 @@ import { auth } from './config/api';
 import { api } from './lib/apiClient';
 import { Loader2 } from 'lucide-react';
 
+
+import './i18n';
+import { useTranslation } from 'react-i18next';
+
 export type UserRole = 'admin' | 'supervisor' | 'trainer' | 'trainee';
 
 export interface User {
@@ -16,6 +20,7 @@ export interface User {
   email: string;
   role: UserRole;
   avatar?: string;
+  createdAt: Date;
 }
 
 // Storage keys

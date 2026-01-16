@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { User, UserRole } from '../../types';
 import { userService } from '../../services/userService';
 import { Plus, Search, Edit, Trash2, MoreVertical } from 'lucide-react';
 import { EditUserModal } from './EditUserModal';
 
 export function UserManagement() {
+  const { t } = useTranslation();
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -42,13 +44,13 @@ export function UserManagement() {
   });
 
   const handleDeleteUser = async (userId: string) => {
-    if (confirm('Are you sure you want to delete this user?')) {
+    if (confirm(t('admin.deleteUserConfirm'))) {
       try {
         await userService.deleteUser(parseInt(userId));
         loadUsers();
       } catch (error) {
         console.error('Failed to delete user:', error);
-        alert('Failed to delete user');
+        alert(t('admin.failedDeleteUser'));
       }
     }
   };
@@ -68,7 +70,7 @@ export function UserManagement() {
       loadUsers();
     } catch (error) {
       console.error('Failed to update user:', error);
-      alert('Failed to update user');
+      alert(t('admin.failedUpdateUser'));
     }
   };
 
@@ -85,15 +87,15 @@ export function UserManagement() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h3>User Management</h3>
-          <p className="text-gray-600 mt-1">Manage all system users and their roles</p>
+          <h3>{t('userManagement')}</h3>
+          <p className="text-gray-600 mt-1">{t('manageAllUsersAndRoles')}</p>
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
           className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
         >
           <Plus className="w-4 h-4" />
-          Add User
+          {t('addUser')}
         </button>
       </div>
 
@@ -104,22 +106,22 @@ export function UserManagement() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
               type="text"
-              placeholder="Search by name or email..."
+              placeholder={t('admin.searchByNameOrEmail')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             />
           </div>
-          <select
+            <select
             value={filterRole}
             onChange={(e) => setFilterRole(e.target.value as UserRole | 'all')}
             className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
           >
-            <option value="all">All Roles</option>
-            <option value="admin">Admin</option>
-            <option value="supervisor">Supervisor</option>
-            <option value="trainer">Trainer</option>
-            <option value="trainee">Trainee</option>
+            <option value="all">{t('admin.allRoles')}</option>
+            <option value="admin">{t('admin.role.admin')}</option>
+            <option value="supervisor">{t('admin.role.supervisor')}</option>
+            <option value="trainer">{t('admin.role.trainer')}</option>
+            <option value="trainee">{t('admin.role.trainee')}</option>
           </select>
         </div>
       </div>
@@ -129,16 +131,16 @@ export function UserManagement() {
         <table className="w-full">
           <thead className="bg-gray-50 border-b border-gray-200">
             <tr>
-              <th className="px-6 py-3 text-left text-gray-700">Name</th>
-              <th className="px-6 py-3 text-left text-gray-700">Email</th>
-              <th className="px-6 py-3 text-left text-gray-700">Role</th>
-              <th className="px-6 py-3 text-left text-gray-700">Created At</th>
-              <th className="px-6 py-3 text-left text-gray-700">Actions</th>
+              <th className="px-6 py-3 text-left text-gray-700">{t('admin.table.name')}</th>
+              <th className="px-6 py-3 text-left text-gray-700">{t('admin.table.email')}</th>
+              <th className="px-6 py-3 text-left text-gray-700">{t('admin.table.role')}</th>
+              <th className="px-6 py-3 text-left text-gray-700">{t('admin.table.createdAt')}</th>
+              <th className="px-6 py-3 text-left text-gray-700">{t('admin.table.actions')}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
             {filteredUsers.map((user) => {
-              const displayName = user.fullName || user.name || 'Unknown';
+              const displayName = user.fullName || user.name || t('admin.unknown');
               const userRole = Array.isArray(user.roles)
                 ? (typeof user.roles[0] === 'string' ? user.roles[0] : user.roles[0]?.name)
                 : (user.role || 'TRAINEE');
@@ -160,21 +162,21 @@ export function UserManagement() {
                     </span>
                   </td>
                   <td className="px-6 py-4 text-gray-600">
-                    {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '-'}
+                    {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : t('admin.notAvailable')}
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => handleEditUser(user)}
                         className="p-2 hover:bg-gray-100 rounded-lg text-gray-600"
-                        title="Edit user"
+                        title={t('editUser')}
                       >
                         <Edit className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleDeleteUser(user.id)}
                         className="p-2 hover:bg-red-50 rounded-lg text-red-600"
-                        title="Delete user"
+                        title={t('deleteUser')}
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -209,6 +211,7 @@ export function UserManagement() {
 }
 
 function CreateUserModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: () => void }) {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -232,7 +235,7 @@ function CreateUserModal({ onClose, onSuccess }: { onClose: () => void; onSucces
       onSuccess();
       onClose();
     } catch (err: any) {
-      setError(err.message || 'Failed to create user');
+      setError(err.message || t('admin.failedCreateUser'));
     } finally {
       setLoading(false);
     }
@@ -242,12 +245,12 @@ function CreateUserModal({ onClose, onSuccess }: { onClose: () => void; onSucces
     <div className="fixed inset-0 bg-black/40 backdrop-blur-md flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
         <div className="p-6 border-b border-gray-200">
-          <h3>Create New User</h3>
+          <h3>{t('admin.createUserTitle')}</h3>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div>
-            <label className="block text-gray-700 mb-2">Full Name</label>
+            <label className="block text-gray-700 mb-2">{t('admin.fullName')}</label>
             <input
               type="text"
               value={formData.name}
@@ -258,7 +261,7 @@ function CreateUserModal({ onClose, onSuccess }: { onClose: () => void; onSucces
           </div>
 
           <div>
-            <label className="block text-gray-700 mb-2">Email</label>
+            <label className="block text-gray-700 mb-2">{t('admin.email')}</label>
             <input
               type="email"
               value={formData.email}
@@ -269,28 +272,28 @@ function CreateUserModal({ onClose, onSuccess }: { onClose: () => void; onSucces
           </div>
 
           <div>
-            <label className="block text-gray-700 mb-2">Password</label>
+            <label className="block text-gray-700 mb-2">{t('admin.password')}</label>
             <input
               type="password"
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               required
-              placeholder="Minimum 8 chars, 1 upper, 1 lower, 1 digit"
+              placeholder={t('admin.passwordPlaceholder')}
             />
           </div>
 
           <div>
-            <label className="block text-gray-700 mb-2">Role</label>
+            <label className="block text-gray-700 mb-2">{t('admin.roleLabel')}</label>
             <select
               value={formData.role}
               onChange={(e) => setFormData({ ...formData, role: e.target.value as UserRole })}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             >
-              <option value="trainee">Trainee</option>
-              <option value="trainer">Trainer</option>
-              <option value="supervisor">Supervisor</option>
-              <option value="admin">Admin</option>
+              <option value="trainee">{t('admin.role.trainee')}</option>
+              <option value="trainer">{t('admin.role.trainer')}</option>
+              <option value="supervisor">{t('admin.role.supervisor')}</option>
+              <option value="admin">{t('admin.role.admin')}</option>
             </select>
           </div>
 
@@ -301,20 +304,20 @@ function CreateUserModal({ onClose, onSuccess }: { onClose: () => void; onSucces
           )}
 
           <div className="flex gap-3 pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
-              disabled={loading}
-            >
-              Cancel
-            </button>
-            <button
+                    <button
+                      type="button"
+                      onClick={onClose}
+                      className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                      disabled={loading}
+                    >
+                      {t('cancel')}
+                    </button>
+                    <button
               type="submit"
               className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50"
               disabled={loading}
             >
-              {loading ? 'Creating...' : 'Create User'}
+              {loading ? t('admin.creating') : t('admin.createUser')}
             </button>
           </div>
         </form>

@@ -29,6 +29,8 @@ async function main() {
             password: hashedPassword,
             fullName: 'System Administrator',
             isEmailVerified: true,
+            githubId: null,
+            githubUsername: null,
             roles: { create: { roleId: getRoleId('ADMIN') } },
         },
     });
@@ -49,6 +51,8 @@ async function main() {
                     ...data,
                     password: hashedPassword,
                     isEmailVerified: true,
+                    githubId: null,
+                    githubUsername: null,
                     roles: { create: { roleId: getRoleId('SUPERVISOR') } },
                 },
             })
@@ -73,6 +77,8 @@ async function main() {
                     ...data,
                     password: hashedPassword,
                     isEmailVerified: true,
+                    githubId: null,
+                    githubUsername: null,
                     roles: { create: { roleId: getRoleId('TRAINER') } },
                 },
             })
@@ -96,6 +102,8 @@ async function main() {
                     fullName: name,
                     password: hashedPassword,
                     isEmailVerified: true,
+                    githubId: null,
+                    githubUsername: null,
                     roles: { create: { roleId: getRoleId('TRAINEE') } },
                 },
             })
@@ -328,22 +336,43 @@ async function main() {
     // ============ PULL REQUESTS ============
 
     const prData = [
-        { title: 'Add user authentication', description: 'Implement JWT-based authentication', status: 'APPROVED' as const },
-        { title: 'Fix CSS responsive issues', description: 'Mobile layout fixes', status: 'APPROVED' as const },
-        { title: 'Implement shopping cart', description: 'Add to cart functionality', status: 'PENDING' as const },
-        { title: 'Database optimization', description: 'Add indexes for faster queries', status: 'PENDING' as const },
-        { title: 'Add unit tests', description: 'Test coverage for utils', status: 'REJECTED' as const },
-        { title: 'Refactor API endpoints', description: 'RESTful improvements', status: 'PENDING' as const },
+        { title: 'Add user authentication', description: 'Implement JWT-based authentication', status: 'APPROVED' as const, courseId: course1.id },
+        { title: 'Fix CSS responsive issues', description: 'Mobile layout fixes', status: 'APPROVED' as const, courseId: course1.id },
+        { title: 'Implement shopping cart', description: 'Add to cart functionality', status: 'PENDING' as const, courseId: course1.id },
+        { title: 'Database optimization', description: 'Add indexes for faster queries', status: 'PENDING' as const, courseId: course2.id },
+        { title: 'Add unit tests', description: 'Test coverage for utils', status: 'REJECTED' as const, courseId: course2.id },
+        { title: 'Refactor API endpoints', description: 'RESTful improvements', status: 'PENDING' as const, courseId: course1.id },
     ];
 
+    // Create sample GitHub repos for courses
+    await prisma.courseRepo.createMany({
+        data: [
+            { courseId: course1.id, repoName: 'training-org/fullstack-project', repoUrl: 'https://github.com/training-org/fullstack-project' },
+            { courseId: course2.id, repoName: 'training-org/data-science-project', repoUrl: 'https://github.com/training-org/data-science-project' },
+            { courseId: course3.id, repoName: 'training-org/devops-project', repoUrl: 'https://github.com/training-org/devops-project' },
+        ],
+    });
+    console.log('✅ Course repos created');
+
     for (let i = 0; i < prData.length; i++) {
+        const traineeIndex = i % 8;
+        const trainee = trainees[traineeIndex];
+        const repoName = prData[i].courseId === course1.id ? 'training-org/fullstack-project' : 'training-org/data-science-project';
+        
         const pr = await prisma.pullRequest.create({
             data: {
                 title: prData[i].title,
                 description: prData[i].description,
                 status: prData[i].status,
-                repoUrl: `https://github.com/trainee${(i % 8) + 1}/project-${i + 1}`,
-                traineeId: trainees[i % 8].id,
+                repoUrl: `https://github.com/${repoName}`,
+                prUrl: `https://github.com/${repoName}/pull/${i + 1}`,
+                prNumber: i + 1,
+                repoName: repoName,
+                githubUserId: `github-user-${trainee.id}`,
+                traineeId: trainee.id,
+                courseId: prData[i].courseId,
+                reviewerId: prData[i].status !== 'PENDING' ? trainers[i % 3].id : null,
+                reviewedAt: prData[i].status !== 'PENDING' ? new Date(Date.now() - i * 24 * 60 * 60 * 1000) : null,
                 createdAt: new Date(Date.now() - (i + 1) * 24 * 60 * 60 * 1000),
             },
         });
@@ -359,7 +388,7 @@ async function main() {
             });
         }
     }
-    console.log('✅ 6 Pull Requests created');
+    console.log('✅ 6 Pull Requests created with GitHub metadata');
 
     // ============ NOTIFICATIONS ============
 
@@ -412,9 +441,10 @@ async function main() {
    - 5 Trainers
    - 15 Trainees
    - 4 Courses (1 finished, 2 in-progress, 1 not started)
+   - 3 GitHub Repos linked to courses
    - 12 Subjects with 25+ Tasks
    - 40 Daily Reports
-   - 6 Pull Requests
+   - 6 Pull Requests with GitHub metadata
    - 15 Notifications
    - 1 Chat Room with messages
 

@@ -25,6 +25,7 @@ export interface AuthResponse {
     success: boolean;
     accessToken: string;
     refreshToken: string;
+    expiresAt?: number | null;
     user: User;
 }
 

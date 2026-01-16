@@ -133,8 +133,26 @@ router.post(
     validateBody(createPRSchema),
     async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
-            const { title, description, repoUrl, taskId } = req.body;
+
+            const { title, description, repoUrl, taskId, courseId: bodyCourseId } = req.body;
             const traineeId = req.user!.id;
+
+            let courseId = bodyCourseId;
+            if (taskId) {
+                const task = await prisma.task.findUnique({
+                    where: { id: taskId },
+                    include: { subject: { select: { courseId: true } } },
+                });
+                if (!task) {
+                    errorResponse(res, 'Task not found', 404);
+                    return;
+                }
+                courseId = task.subject.courseId;
+            }
+            if (!courseId) {
+                errorResponse(res, 'courseId is required', 400);
+                return;
+            }
 
             const pr = await prisma.pullRequest.create({
                 data: {
@@ -143,6 +161,7 @@ router.post(
                     description,
                     repoUrl,
                     taskId,
+                    courseId,
                 },
                 include: {
                     trainee: {

@@ -3,10 +3,13 @@ import { User } from '../types';
 import { DashboardLayout } from './DashboardLayout';
 import { TraineeCourses } from './trainee/TraineeCourses';
 import { DailyReports } from './trainee/DailyReports';
-import { TraineePullRequests } from './trainee/TraineePullRequests';
+import TraineePullRequests from './trainee/TraineePullRequests';
+import { TraineePullRequestView } from './trainee/TraineePullRequestView';
 import { ChatInterface } from './shared/ChatInterface';
-import { LayoutDashboard, BookOpen, FileText, GitPullRequest, MessageSquare, Loader2, Calendar, CheckCircle } from 'lucide-react';
+import { GitHubSettings } from './settings/GitHubSettings';
+import { LayoutDashboard, BookOpen, FileText, GitPullRequest, MessageSquare, Loader2, Calendar, CheckCircle, Settings } from 'lucide-react';
 import { api } from '../lib/apiClient';
+import { useTranslation } from 'react-i18next';
 
 interface TraineeDashboardProps {
   user: User;
@@ -15,13 +18,14 @@ interface TraineeDashboardProps {
 
 export function TraineeDashboard({ user, onLogout }: TraineeDashboardProps) {
   const [currentView, setCurrentView] = useState('dashboard');
-
+  const { t } = useTranslation();
   const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard className="w-5 h-5" /> },
-    { id: 'courses', label: 'My Courses', icon: <BookOpen className="w-5 h-5" /> },
-    { id: 'reports', label: 'Daily Reports', icon: <FileText className="w-5 h-5" /> },
-    { id: 'pull-requests', label: 'Pull Requests', icon: <GitPullRequest className="w-5 h-5" /> },
-    { id: 'chat', label: 'Messages', icon: <MessageSquare className="w-5 h-5" /> },
+    { id: 'dashboard', label: t('dashboard'), icon: <LayoutDashboard className="w-5 h-5" /> },
+    { id: 'courses', label: t('myCourses'), icon: <BookOpen className="w-5 h-5" /> },
+    { id: 'reports', label: t('dailyReports'), icon: <FileText className="w-5 h-5" /> },
+    { id: 'pull-requests', label: t('pullRequests'), icon: <GitPullRequest className="w-5 h-5" /> },
+    { id: 'chat', label: t('messages'), icon: <MessageSquare className="w-5 h-5" /> },
+    { id: 'settings', label: t('settings'), icon: <Settings className="w-5 h-5" /> },
   ];
 
   return (
@@ -35,8 +39,9 @@ export function TraineeDashboard({ user, onLogout }: TraineeDashboardProps) {
       {currentView === 'dashboard' && <TraineeOverview onViewChange={setCurrentView} />}
       {currentView === 'courses' && <TraineeCourses traineeId={user.id} />}
       {currentView === 'reports' && <DailyReports traineeId={user.id} />}
-      {currentView === 'pull-requests' && <TraineePullRequests traineeId={user.id} />}
+      {currentView === 'pull-requests' && <TraineePullRequestView traineeId={user.id} />}
       {currentView === 'chat' && <ChatInterface currentUserId={user.id} />}
+      {currentView === 'settings' && <GitHubSettings />}
     </DashboardLayout>
   );
 }
@@ -44,6 +49,7 @@ export function TraineeDashboard({ user, onLogout }: TraineeDashboardProps) {
 function TraineeOverview({ onViewChange }: { onViewChange: (view: string) => void }) {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const { t } = useTranslation();
 
   useEffect(() => {
     loadDashboard();
@@ -69,7 +75,7 @@ function TraineeOverview({ onViewChange }: { onViewChange: (view: string) => voi
   }
 
   if (!data) {
-    return <div className="text-center py-12 text-gray-500">Failed to load dashboard</div>;
+    return <div className="text-center py-12 text-gray-500">{t('failedToLoadDashboard')}</div>;
   }
 
   const stats = data.statistics || {};
@@ -80,25 +86,25 @@ function TraineeOverview({ onViewChange }: { onViewChange: (view: string) => voi
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-2xl font-bold text-gray-900">My Dashboard</h3>
-        <p className="text-gray-600 mt-1">Track your learning progress</p>
+        <h3 className="text-2xl font-bold text-gray-900">{t('myDashboard')}</h3>
+        <p className="text-gray-600 mt-1">{t('trackYourLearningProgress')}</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-gray-600">Enrolled Courses</span>
+            <span className="text-gray-600">{t('enrolledCourses')}</span>
             <div className="p-2 bg-blue-100 rounded-lg">
               <BookOpen className="w-5 h-5 text-blue-600" />
             </div>
           </div>
           <div className="text-3xl font-bold text-gray-900">{stats.totalCourses || 0}</div>
-          <div className="text-blue-600 text-sm mt-1">{stats.activeCourses || 0} in progress</div>
+          <div className="text-blue-600 text-sm mt-1">{t('inProgress', { count: stats.activeCourses || 0 })}</div>
         </div>
 
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-gray-600">Completed Tasks</span>
+            <span className="text-gray-600">{t('completedTasks')}</span>
             <div className="p-2 bg-green-100 rounded-lg">
               <CheckCircle className="w-5 h-5 text-green-600" />
             </div>
@@ -107,37 +113,37 @@ function TraineeOverview({ onViewChange }: { onViewChange: (view: string) => voi
             {stats.completedTasks || 0}/{stats.totalTasks || 0}
           </div>
           <div className="text-green-600 text-sm mt-1">
-            {stats.completionRate || 0}% complete
+            {t('completionRate', { rate: stats.completionRate || 0 })}
           </div>
         </div>
 
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-gray-600">Pull Requests</span>
+            <span className="text-gray-600">{t('pullRequests')}</span>
             <div className="p-2 bg-purple-100 rounded-lg">
               <GitPullRequest className="w-5 h-5 text-purple-600" />
             </div>
           </div>
           <div className="text-3xl font-bold text-gray-900">{stats.totalPRs || 0}</div>
-          <div className="text-green-600 text-sm mt-1">{stats.approvedPRs || 0} approved</div>
+          <div className="text-green-600 text-sm mt-1">{t('approvedPRs', { count: stats.approvedPRs || 0 })}</div>
         </div>
 
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-gray-600">Daily Reports</span>
+            <span className="text-gray-600">{t('dailyReports')}</span>
             <div className="p-2 bg-orange-100 rounded-lg">
               <FileText className="w-5 h-5 text-orange-600" />
             </div>
           </div>
           <div className="text-3xl font-bold text-gray-900">{stats.totalReports || 0}</div>
-          <div className="text-green-600 text-sm mt-1">Keep it up!</div>
+          <div className="text-green-600 text-sm mt-1">{t('keepItUp')}</div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
           <h4 className="font-semibold text-lg mb-4 flex items-center gap-2">
-            <BookOpen className="w-5 h-5 text-blue-600" /> Course Progress
+            <BookOpen className="w-5 h-5 text-blue-600" /> {t('courseProgress')}
           </h4>
           {courses.length > 0 ? (
             <div className="space-y-4">
@@ -146,24 +152,24 @@ function TraineeOverview({ onViewChange }: { onViewChange: (view: string) => voi
                   <div className="flex items-center justify-between mb-2">
                     <span className="font-medium text-gray-900">{course.title}</span>
                     <span className="text-gray-600 text-sm">
-                      {course.completedTasks || 0}/{course.totalTasks || 0} tasks
+                      {course.completedTasks || 0}/{course.totalTasks || 0} {t('tasks')}
                     </span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2 mb-1">
-                    <div className="bg-indigo-600 h-2 rounded-full" style={{ width: `${course.progress || 0}%` }} />
+                  <div className="trainee-progress-bar-bg">
+                    <div className="trainee-progress-bar" style={{ width: `${course.progress || 0}%` }} />
                   </div>
-                  <div className="text-gray-600 text-sm">{Math.round(course.progress || 0)}% complete</div>
+                  <div className="text-gray-600 text-sm">{t('percentComplete', { percent: Math.round(course.progress || 0) })}</div>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-gray-500 text-center py-4">No courses enrolled yet</p>
+            <p className="text-gray-500 text-center py-4">{t('noCoursesEnrolledYet')}</p>
           )}
         </div>
 
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
           <h4 className="font-semibold text-lg mb-4 flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-orange-600" /> Upcoming Deadlines
+            <Calendar className="w-5 h-5 text-orange-600" /> {t('upcomingDeadlines')}
           </h4>
           {upcomingTasks.length > 0 ? (
             <div className="space-y-3">
@@ -174,14 +180,14 @@ function TraineeOverview({ onViewChange }: { onViewChange: (view: string) => voi
                     <div className="font-medium text-gray-900">{task.title}</div>
                     <div className="text-gray-600 text-sm">{task.course?.title}</div>
                     <div className="text-orange-600 text-xs mt-1">
-                      Due: {new Date(task.dueDate).toLocaleDateString()}
+                      {t('dueDate', { date: new Date(task.dueDate).toLocaleDateString() })}
                     </div>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-gray-500 text-center py-4">No upcoming deadlines</p>
+            <p className="text-gray-500 text-center py-4">{t('noUpcomingDeadlines')}</p>
           )}
         </div>
       </div>
@@ -189,7 +195,7 @@ function TraineeOverview({ onViewChange }: { onViewChange: (view: string) => voi
       {recentReports.length > 0 && (
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
           <h4 className="font-semibold text-lg mb-4 flex items-center gap-2">
-            <FileText className="w-5 h-5 text-indigo-600" /> Recent Reports
+            <FileText className="w-5 h-5 text-indigo-600" /> {t('recentReports')}
           </h4>
           <div className="space-y-3">
             {recentReports.slice(0, 3).map((report: any) => (
@@ -205,20 +211,20 @@ function TraineeOverview({ onViewChange }: { onViewChange: (view: string) => voi
             ))}
           </div>
           <button onClick={() => onViewChange('reports')} className="text-indigo-600 hover:underline text-sm mt-4">
-            View all reports →
+            {t('viewAllReports')}
           </button>
         </div>
       )}
 
       <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-6 rounded-xl">
-        <h4 className="text-lg font-semibold mb-2">Keep up the great work!</h4>
+        <h4 className="text-lg font-semibold mb-2">{t('keepUpTheGreatWork')}</h4>
         <p className="text-indigo-100 mb-4">
           {stats.completedTasks > 0
-            ? `You've completed ${stats.completedTasks} tasks. Keep pushing forward!`
-            : 'Start completing tasks to track your progress here.'}
+            ? t('completedTasksMessage', { count: stats.completedTasks })
+            : t('startCompletingTasksMessage')}
         </p>
         <button onClick={() => onViewChange('courses')} className="px-6 py-2 bg-white text-indigo-600 rounded-lg hover:bg-indigo-50">
-          View Courses
+          {t('viewCourses')}
         </button>
       </div>
     </div>

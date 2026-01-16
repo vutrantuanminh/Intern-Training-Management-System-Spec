@@ -1,4 +1,5 @@
 import { Router, Request, Response, NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
 import { prisma } from '../../config/database.js';
 import { env } from '../../config/env.js';
@@ -144,9 +145,21 @@ router.post(
                 maxAge: 7 * 24 * 60 * 60 * 1000,
             });
 
+            // Extract expiry from the access token (exp claim is in seconds)
+            let expiresAt: number | null = null;
+            try {
+                const decoded: any = jwt.decode(accessToken);
+                if (decoded && decoded.exp) {
+                    expiresAt = decoded.exp * 1000;
+                }
+            } catch (e) {
+                // ignore decode errors, fallback to null
+            }
+
             successResponse(res, {
                 accessToken,
                 refreshToken,
+                expiresAt,
                 user: {
                     id: user.id,
                     email: user.email,

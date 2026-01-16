@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { api } from '../../lib/apiClient';
 import { User, Loader2, Star, Check, X } from 'lucide-react';
 
@@ -19,7 +20,9 @@ interface TraineeProgress {
     totalTasks: number;
 }
 
+
 export function TraineeGrading({ subjectId, subjectTitle, onClose }: TraineeGradingProps) {
+    const { t } = useTranslation();
     const [trainees, setTrainees] = useState<TraineeProgress[]>([]);
     const [loading, setLoading] = useState(true);
     const [editingTrainee, setEditingTrainee] = useState<number | null>(null);
@@ -43,14 +46,15 @@ export function TraineeGrading({ subjectId, subjectTitle, onClose }: TraineeGrad
     };
 
     const handleGrade = async (traineeId: number) => {
+
         if (!gradeForm.grade) {
-            alert('Please enter a grade');
+            alert(t('traineeGrading.enterGrade', 'Please enter a grade'));
             return;
         }
 
         const grade = parseFloat(gradeForm.grade);
         if (isNaN(grade) || grade < 0 || grade > 100) {
-            alert('Grade must be between 0 and 100');
+            alert(t('traineeGrading.gradeRange', 'Grade must be between 0 and 100'));
             return;
         }
 
@@ -65,7 +69,7 @@ export function TraineeGrading({ subjectId, subjectTitle, onClose }: TraineeGrad
             loadTrainees();
         } catch (error) {
             console.error('Failed to grade trainee:', error);
-            alert('Failed to save grade');
+            alert(t('traineeGrading.failedToSaveGrade', 'Failed to save grade'));
         } finally {
             setSubmitting(false);
         }
@@ -84,7 +88,7 @@ export function TraineeGrading({ subjectId, subjectTitle, onClose }: TraineeGrad
             <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
                 <div className="p-6 border-b border-gray-200 flex items-center justify-between">
                     <div>
-                        <h4 className="text-lg font-semibold">Grade Trainees</h4>
+                        <h4 className="text-lg font-semibold">{t('traineeGrading.title', 'Grade Trainees')}</h4>
                         <p className="text-gray-600 text-sm">{subjectTitle}</p>
                     </div>
                     <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg">
@@ -114,10 +118,10 @@ export function TraineeGrading({ subjectId, subjectTitle, onClose }: TraineeGrad
 
                                         <div className="flex items-center gap-3">
                                             <span className={`px-2 py-1 rounded text-sm ${getStatusColor(trainee.status)}`}>
-                                                {trainee.status.replace('_', ' ')}
+                                                {t(`traineeGrading.status.${trainee.status.toLowerCase()}`, trainee.status.replace('_', ' '))}
                                             </span>
                                             <span className="text-gray-600 text-sm">
-                                                {trainee.tasksCompleted}/{trainee.totalTasks} tasks
+                                                {trainee.tasksCompleted}/{trainee.totalTasks} {t('traineeGrading.tasks', 'tasks')}
                                             </span>
                                         </div>
                                     </div>
@@ -139,7 +143,7 @@ export function TraineeGrading({ subjectId, subjectTitle, onClose }: TraineeGrad
                                             <div className="flex items-center gap-2">
                                                 <input
                                                     type="number"
-                                                    placeholder="0-100"
+                                                    placeholder={t('traineeGrading.gradePlaceholder', '0-100')}
                                                     min="0"
                                                     max="100"
                                                     value={gradeForm.grade}
@@ -148,7 +152,7 @@ export function TraineeGrading({ subjectId, subjectTitle, onClose }: TraineeGrad
                                                 />
                                                 <input
                                                     type="text"
-                                                    placeholder="Feedback (optional)"
+                                                    placeholder={t('traineeGrading.feedbackOptional', 'Feedback (optional)')}
                                                     value={gradeForm.feedback}
                                                     onChange={(e) => setGradeForm({ ...gradeForm, feedback: e.target.value })}
                                                     className="w-48 px-3 py-2 border border-gray-300 rounded-lg"
@@ -181,7 +185,7 @@ export function TraineeGrading({ subjectId, subjectTitle, onClose }: TraineeGrad
                                                 }}
                                                 className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
                                             >
-                                                {trainee.grade !== null && trainee.grade !== undefined ? 'Edit Grade' : 'Grade'}
+                                                {trainee.grade !== null && trainee.grade !== undefined ? t('traineeGrading.editGrade', 'Edit Grade') : t('traineeGrading.grade', 'Grade')}
                                             </button>
                                         )}
                                     </div>
@@ -190,7 +194,7 @@ export function TraineeGrading({ subjectId, subjectTitle, onClose }: TraineeGrad
                         </div>
                     ) : (
                         <div className="text-center py-12 text-gray-500">
-                            No trainees enrolled in this subject
+                            {t('traineeGrading.noTrainees', 'No trainees enrolled in this subject')}
                         </div>
                     )}
                 </div>
@@ -200,10 +204,9 @@ export function TraineeGrading({ subjectId, subjectTitle, onClose }: TraineeGrad
                         onClick={onClose}
                         className="w-full px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
                     >
-                        Close
+                        {t('traineeGrading.close', 'Close')}
                     </button>
                 </div>
             </div>
         </div>
-    );
-}
+    )};

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { api } from '../../lib/apiClient';
 import { Search, Calendar, User, Loader2, FileText } from 'lucide-react';
 
@@ -16,6 +17,7 @@ interface Report {
 }
 
 export function TraineeReportsView() {
+    const { t } = useTranslation();
     const [reports, setReports] = useState<Report[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -59,8 +61,8 @@ export function TraineeReportsView() {
     return (
         <div className="space-y-6">
             <div>
-                <h3 className="text-2xl font-bold text-gray-900">Trainee Daily Reports</h3>
-                <p className="text-gray-600 mt-1">View reports submitted by trainees in your courses</p>
+                <h3 className="text-2xl font-bold text-gray-900">{t('traineeReportsView.title', 'Trainee Daily Reports')}</h3>
+                <p className="text-gray-600 mt-1">{t('traineeReportsView.subtitle', 'View reports submitted by trainees in your courses')}</p>
             </div>
 
             <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 flex gap-4">
@@ -68,7 +70,7 @@ export function TraineeReportsView() {
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                     <input
                         type="text"
-                        placeholder="Search by trainee name or content..."
+                        placeholder={t('traineeReportsView.searchPlaceholder', 'Search by trainee name or content...')}
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
@@ -121,7 +123,7 @@ export function TraineeReportsView() {
                                         </div>
 
                                         <div className="text-gray-400 text-sm mt-3">
-                                            Submitted {new Date(report.createdAt).toLocaleString()}
+                                            {t('traineeReportsView.submitted', 'Submitted')} {new Date(report.createdAt).toLocaleString()}
                                         </div>
                                     </div>
                                 </div>
@@ -132,7 +134,9 @@ export function TraineeReportsView() {
                     <div className="text-center py-12 bg-white rounded-xl border border-gray-200">
                         <FileText className="w-12 h-12 text-gray-300 mx-auto mb-3" />
                         <p className="text-gray-500">
-                            {searchTerm || dateFilter ? 'No reports match your filters' : 'No reports submitted yet'}
+                            {searchTerm || dateFilter
+                                ? t('traineeReportsView.noReportsMatch', 'No reports match your filters')
+                                : t('traineeReportsView.noReports', 'No reports submitted yet')}
                         </p>
                     </div>
                 )}

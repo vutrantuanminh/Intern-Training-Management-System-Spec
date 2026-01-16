@@ -1,4 +1,6 @@
+
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Plus, ExternalLink, GitPullRequest, Loader2 } from 'lucide-react';
 import { api } from '../../lib/apiClient';
 
@@ -24,7 +26,8 @@ interface Task {
   subject?: { id: number; title: string };
 }
 
-export function TraineePullRequests({ traineeId }: TraineePullRequestsProps) {
+function TraineePullRequests() {
+  const { t } = useTranslation();
   const [pullRequests, setPullRequests] = useState<PullRequest[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
@@ -33,6 +36,7 @@ export function TraineePullRequests({ traineeId }: TraineePullRequestsProps) {
   useEffect(() => {
     loadPullRequests();
     loadTasks();
+    // eslint-disable-next-line
   }, []);
 
   const loadPullRequests = async () => {
@@ -91,15 +95,15 @@ export function TraineePullRequests({ traineeId }: TraineePullRequestsProps) {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-2xl font-bold text-gray-900">My Pull Requests</h3>
-          <p className="text-gray-600 mt-1">Track your code submissions and reviews</p>
+          <h3 className="text-2xl font-bold text-gray-900">{t('traineePullRequests.title', 'My Pull Requests')}</h3>
+          <p className="text-gray-600 mt-1">{t('traineePullRequests.subtitle', 'Track your code submissions and reviews')}</p>
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
           className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
         >
           <Plus className="w-4 h-4" />
-          Submit PR
+          {t('traineePullRequests.submitPr', 'Submit PR')}
         </button>
       </div>
 
@@ -124,7 +128,7 @@ export function TraineePullRequests({ traineeId }: TraineePullRequestsProps) {
                         </div>
                       </div>
                       <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusBadge(pr.status)}`}>
-                        {pr.status}
+                        {t(`traineePullRequests.status.${pr.status.toLowerCase()}`, { defaultValue: pr.status })}
                       </span>
                     </div>
 
@@ -132,11 +136,11 @@ export function TraineePullRequests({ traineeId }: TraineePullRequestsProps) {
 
                     {pr.feedback && (
                       <div className="mb-4 p-4 bg-blue-50 rounded-lg">
-                        <div className="font-medium text-gray-700 mb-1">Trainer Feedback:</div>
+                        <div className="font-medium text-gray-700 mb-1">{t('traineePullRequests.trainerFeedback', 'Trainer Feedback:')}</div>
                         <p className="text-gray-600">{pr.feedback}</p>
                         {pr.reviewedAt && (
                           <div className="text-gray-500 text-sm mt-2">
-                            Reviewed on {new Date(pr.reviewedAt).toLocaleDateString()}
+                            {t('traineePullRequests.reviewedOn', 'Reviewed on')} {new Date(pr.reviewedAt).toLocaleDateString()}
                           </div>
                         )}
                       </div>
@@ -149,7 +153,7 @@ export function TraineePullRequests({ traineeId }: TraineePullRequestsProps) {
                       className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
                     >
                       <ExternalLink className="w-4 h-4" />
-                      View on GitHub
+                      {t('traineePullRequests.viewOnGithub', 'View on GitHub')}
                     </a>
                   </div>
                 </div>
@@ -159,12 +163,12 @@ export function TraineePullRequests({ traineeId }: TraineePullRequestsProps) {
         ) : (
           <div className="text-center py-12 bg-white rounded-xl border border-gray-200">
             <GitPullRequest className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-500">No pull requests submitted yet</p>
+            <p className="text-gray-500">{t('traineePullRequests.noPullRequests', 'No pull requests submitted yet')}</p>
             <button
               onClick={() => setShowCreateModal(true)}
               className="text-indigo-600 hover:underline mt-2"
             >
-              Submit your first PR
+              {t('traineePullRequests.submitFirstPr', 'Submit your first PR')}
             </button>
           </div>
         )}
@@ -184,11 +188,14 @@ export function TraineePullRequests({ traineeId }: TraineePullRequestsProps) {
   );
 }
 
+export default TraineePullRequests;
+
 function CreatePRModal({ tasks, onClose, onPRCreated }: {
   tasks: Task[];
   onClose: () => void;
   onPRCreated: (pr: PullRequest) => void;
 }) {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     taskId: '',
     title: '',
@@ -215,7 +222,7 @@ function CreatePRModal({ tasks, onClose, onPRCreated }: {
       const response: any = await api.post('/pull-requests', payload);
       onPRCreated(response.data);
     } catch (err: any) {
-      setError(err.message || 'Failed to submit pull request');
+      setError(err.message || t('traineePullRequests.submitError', 'Failed to submit pull request'));
     } finally {
       setSubmitting(false);
     }
@@ -225,8 +232,8 @@ function CreatePRModal({ tasks, onClose, onPRCreated }: {
     <div className="fixed inset-0 bg-black/40 backdrop-blur-md flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl">
         <div className="p-6 border-b border-gray-200">
-          <h4 className="text-lg font-semibold">Submit Pull Request</h4>
-          <p className="text-gray-600 mt-1">Submit your code for review</p>
+          <h4 className="text-lg font-semibold">{t('traineePullRequests.submitTitle', 'Submit Pull Request')}</h4>
+          <p className="text-gray-600 mt-1">{t('traineePullRequests.submitSubtitle', 'Submit your code for review')}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
@@ -235,14 +242,14 @@ function CreatePRModal({ tasks, onClose, onPRCreated }: {
           )}
 
           <div>
-            <label className="block text-gray-700 font-medium mb-2">Related Task *</label>
+            <label className="block text-gray-700 font-medium mb-2">{t('traineePullRequests.relatedTask', 'Related Task *')}</label>
             <select
               value={formData.taskId}
               onChange={(e) => setFormData({ ...formData, taskId: e.target.value })}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               required
             >
-              <option value="">Select a task...</option>
+              <option value="">{t('traineePullRequests.selectTask', 'Select a task...')}</option>
               {tasks.map((task) => (
                 <option key={task.id} value={task.id}>
                   {task.subject?.title ? `${task.subject.title} - ` : ''}{task.title}
@@ -250,42 +257,42 @@ function CreatePRModal({ tasks, onClose, onPRCreated }: {
               ))}
             </select>
             {tasks.length === 0 && (
-              <p className="text-gray-500 text-sm mt-1">No incomplete tasks available</p>
+              <p className="text-gray-500 text-sm mt-1">{t('traineePullRequests.noIncompleteTasks', 'No incomplete tasks available')}</p>
             )}
           </div>
 
           <div>
-            <label className="block text-gray-700 font-medium mb-2">PR Title *</label>
+            <label className="block text-gray-700 font-medium mb-2">{t('traineePullRequests.prTitle', 'PR Title *')}</label>
             <input
               type="text"
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-              placeholder="Brief description of your changes"
+              placeholder={t('traineePullRequests.prTitlePlaceholder', 'Brief description of your changes')}
               required
             />
           </div>
 
           <div>
-            <label className="block text-gray-700 font-medium mb-2">Description *</label>
+            <label className="block text-gray-700 font-medium mb-2">{t('traineePullRequests.description', 'Description *')}</label>
             <textarea
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               rows={5}
-              placeholder="Describe what you implemented and any challenges you faced..."
+              placeholder={t('traineePullRequests.descriptionPlaceholder', 'Describe what you implemented and any challenges you faced...')}
               required
             />
           </div>
 
           <div>
-            <label className="block text-gray-700 font-medium mb-2">GitHub PR URL *</label>
+            <label className="block text-gray-700 font-medium mb-2">{t('traineePullRequests.githubPrUrl', 'GitHub PR URL *')}</label>
             <input
               type="url"
               value={formData.url}
               onChange={(e) => setFormData({ ...formData, url: e.target.value })}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-              placeholder="https://github.com/username/repo/pull/123"
+              placeholder={t('traineePullRequests.githubPrUrlPlaceholder', 'https://github.com/username/repo/pull/123')}
               required
             />
           </div>
@@ -297,7 +304,7 @@ function CreatePRModal({ tasks, onClose, onPRCreated }: {
               disabled={submitting}
               className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50"
             >
-              Cancel
+              {t('traineePullRequests.cancel', 'Cancel')}
             </button>
             <button
               type="submit"
@@ -305,7 +312,7 @@ function CreatePRModal({ tasks, onClose, onPRCreated }: {
               className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
-              Submit Pull Request
+              {t('traineePullRequests.submitPullRequest', 'Submit Pull Request')}
             </button>
           </div>
         </form>

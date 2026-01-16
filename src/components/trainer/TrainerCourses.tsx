@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { trainerService } from '../../services/trainerService';
 import { BookOpen, Users, Calendar, ChevronRight, Loader2 } from 'lucide-react';
 import { SubjectManagement } from './SubjectManagement';
@@ -8,6 +9,7 @@ interface TrainerCoursesProps {
 }
 
 export function TrainerCourses({ trainerId }: TrainerCoursesProps) {
+  const { t } = useTranslation();
   const [courses, setCourses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCourse, setSelectedCourse] = useState<any>(null);
@@ -50,16 +52,16 @@ export function TrainerCourses({ trainerId }: TrainerCoursesProps) {
 
   const getStatusBadge = (course: any) => {
     const status = course.status;
-    if (status === 'IN_PROGRESS') return { label: 'In Progress', class: 'bg-blue-100 text-blue-700' };
-    if (status === 'FINISHED') return { label: 'Completed', class: 'bg-green-100 text-green-700' };
-    return { label: 'Not Started', class: 'bg-gray-100 text-gray-700' };
+    if (status === 'IN_PROGRESS') return { label: t('trainerCourses.status.inProgress', 'In Progress'), class: 'bg-blue-100 text-blue-700' };
+    if (status === 'FINISHED') return { label: t('trainerCourses.status.completed', 'Completed'), class: 'bg-green-100 text-green-700' };
+    return { label: t('trainerCourses.status.notStarted', 'Not Started'), class: 'bg-gray-100 text-gray-700' };
   };
 
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-2xl font-bold text-gray-900">My Courses</h3>
-        <p className="text-gray-600 mt-1">Manage subjects and evaluate trainees in your assigned courses</p>
+        <h3 className="text-2xl font-bold text-gray-900">{t('trainerCourses.title', 'My Courses')}</h3>
+        <p className="text-gray-600 mt-1">{t('trainerCourses.subtitle', 'Manage subjects and evaluate trainees in your assigned courses')}</p>
       </div>
 
       {courses.length > 0 ? (
@@ -81,16 +83,16 @@ export function TrainerCourses({ trainerId }: TrainerCoursesProps) {
                     </div>
                   </div>
 
-                  <p className="text-gray-600 text-sm mb-4 line-clamp-2">{course.description || 'No description'}</p>
+                  <p className="text-gray-600 text-sm mb-4 line-clamp-2">{course.description || t('trainerCourses.noDescription', 'No description')}</p>
 
                   <div className="grid grid-cols-2 gap-4 mb-4">
                     <div className="flex items-center gap-2 text-sm text-gray-600">
                       <BookOpen className="w-4 h-4" />
-                      <span>{course.subjectCount || 0} Subjects</span>
+                      <span>{course.subjectCount || 0} {t('trainerCourses.subjects', 'Subjects')}</span>
                     </div>
                     <div className="flex items-center gap-2 text-sm text-gray-600">
                       <Users className="w-4 h-4" />
-                      <span>{course.traineeCount || 0} Trainees</span>
+                      <span>{course.traineeCount || 0} {t('trainerCourses.trainees', 'Trainees')}</span>
                     </div>
                     <div className="flex items-center gap-2 text-sm text-gray-600 col-span-2">
                       <Calendar className="w-4 h-4" />
@@ -104,7 +106,7 @@ export function TrainerCourses({ trainerId }: TrainerCoursesProps) {
                     onClick={() => setSelectedCourse(course)}
                     className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
                   >
-                    Manage Subjects & Tasks
+                    {t('trainerCourses.manageSubjectsAndTasks', 'Manage Subjects & Tasks')}
                     <ChevronRight className="w-4 h-4" />
                   </button>
                 </div>
@@ -115,8 +117,8 @@ export function TrainerCourses({ trainerId }: TrainerCoursesProps) {
       ) : (
         <div className="text-center py-12 bg-white rounded-xl border border-gray-200">
           <BookOpen className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-          <p className="text-gray-500">No courses assigned yet</p>
-          <p className="text-gray-400 text-sm mt-1">You will see your courses here once you're assigned as a trainer</p>
+          <p className="text-gray-500">{t('trainerCourses.noCourses', 'No courses assigned yet')}</p>
+          <p className="text-gray-400 text-sm mt-1">{t('trainerCourses.noCoursesHint', "You will see your courses here once you're assigned as a trainer")}</p>
         </div>
       )}
     </div>

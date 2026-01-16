@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { courseService } from '../services/courseService';
 import { useIsMobile } from '../hooks/useResponsive';
+import { useTranslation } from 'react-i18next';
 
 export function CourseList() {
     const [courses, setCourses] = useState<any[]>([]);
@@ -12,6 +13,7 @@ export function CourseList() {
         limit: 10,
     });
     const isMobile = useIsMobile();
+    const { t } = useTranslation();
 
     useEffect(() => {
         loadCourses();
@@ -29,7 +31,7 @@ export function CourseList() {
     };
 
     if (loading) {
-        return <div className="p-8">Loading...</div>;
+        return <div className="p-8">{t('loading')}</div>;
     }
 
     return (
@@ -38,12 +40,12 @@ export function CourseList() {
                 {/* Header */}
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900">Courses</h1>
-                        <p className="text-gray-600 mt-2">Browse and manage training courses</p>
+                        <h1 className="text-3xl font-bold text-gray-900">{t('courses')}</h1>
+                        <p className="text-gray-600 mt-2">{t('browseAndManageTrainingCourses')}</p>
                     </div>
                     <button className="mt-4 md:mt-0 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2">
                         <span>+</span>
-                        <span>New Course</span>
+                        <span>{t('newCourse')}</span>
                     </button>
                 </div>
 
@@ -52,7 +54,7 @@ export function CourseList() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <input
                             type="text"
-                            placeholder="Search courses..."
+                            placeholder={t('searchCoursesPlaceholder')}
                             value={filters.search}
                             onChange={(e) => setFilters({ ...filters, search: e.target.value })}
                             className="px-4 py-2 border rounded-lg"
@@ -62,10 +64,10 @@ export function CourseList() {
                             onChange={(e) => setFilters({ ...filters, status: e.target.value })}
                             className="px-4 py-2 border rounded-lg"
                         >
-                            <option value="all">All Courses</option>
-                            <option value="NOT_STARTED">Upcoming</option>
-                            <option value="IN_PROGRESS">Ongoing</option>
-                            <option value="FINISHED">Completed</option>
+                            <option value="all">{t('allCourses')}</option>
+                            <option value="NOT_STARTED">{t('upcoming')}</option>
+                            <option value="IN_PROGRESS">{t('ongoing')}</option>
+                            <option value="FINISHED">{t('completed')}</option>
                         </select>
                     </div>
                 </div>
@@ -79,7 +81,7 @@ export function CourseList() {
 
                 {courses.length === 0 && (
                     <div className="text-center py-12">
-                        <p className="text-gray-500 text-lg">No courses found</p>
+                        <p className="text-gray-500 text-lg">{t('noCoursesFound')}</p>
                     </div>
                 )}
             </div>
@@ -98,14 +100,15 @@ function CourseCard({ course }: { course: any }) {
         return 'bg-green-100 text-green-800';
     };
 
+    const { t } = useTranslation();
     const getStatusText = () => {
         const now = new Date();
         const start = new Date(course.startDate);
         const end = new Date(course.endDate);
 
-        if (now < start) return 'Upcoming';
-        if (now > end) return 'Completed';
-        return 'Ongoing';
+        if (now < start) return t('upcoming');
+        if (now > end) return t('completed');
+        return t('ongoing');
     };
 
     return (
@@ -127,16 +130,16 @@ function CourseCard({ course }: { course: any }) {
                     </div>
                     <div className="flex items-center text-sm text-gray-600">
                         <span className="mr-2">📚</span>
-                        <span>{course.subjectCount || 0} Subjects</span>
+                        <span>{course.subjectCount || 0} {t('subjects')}</span>
                     </div>
                     <div className="flex items-center text-sm text-gray-600">
                         <span className="mr-2">👥</span>
-                        <span>{course.trainees?.length || 0} Trainees</span>
+                        <span>{course.trainees?.length || 0} {t('trainees')}</span>
                     </div>
                 </div>
 
                 <button className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                    View Details
+                    {t('viewDetails')}
                 </button>
             </div>
         </div>

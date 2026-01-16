@@ -196,6 +196,10 @@ RATE_LIMIT_WINDOW_MS=900000
 RATE_LIMIT_MAX_REQUESTS=1000
 ```
 
+Notes:
+- `JWT_EXPIRES_IN` can be used to override the access token TTL (default: `10h`).
+- `JWT_REFRESH_EXPIRES_IN` controls refresh token TTL (default: `7d`).
+
 5. **Deploy Settings**:
    - Root Directory: `/backend`
    - Build Command: `npm install && npx prisma generate && npm run build`

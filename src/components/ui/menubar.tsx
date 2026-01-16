@@ -1,8 +1,8 @@
 "use client";
 
 import * as React from "react";
-import * as MenubarPrimitive from "@radix-ui/react-menubar@1.1.6";
-import { CheckIcon, ChevronRightIcon, CircleIcon } from "lucide-react@0.487.0";
+import * as MenubarPrimitive from "@radix-ui/react-menubar";
+import { CheckIcon, ChevronRightIcon, CircleIcon } from "lucide-react";
 
 import { cn } from "./utils";
 
@@ -10,15 +10,34 @@ function Menubar({
   className,
   ...props
 }: React.ComponentProps<typeof MenubarPrimitive.Root>) {
+  // Responsive menubar: hamburger for mobile, horizontal for desktop
   return (
-    <MenubarPrimitive.Root
+    <nav
       data-slot="menubar"
       className={cn(
-        "bg-background flex h-9 items-center gap-1 rounded-md border p-1 shadow-xs",
+        "flex h-10 items-center gap-2 px-2 bg-white border-b border-gray-200 shadow-sm w-full",
         className,
       )}
       {...props}
-    />
+    >
+      {/* Hamburger for mobile */}
+      <button
+        className="lg:hidden p-2 rounded-md hover:bg-gray-100"
+        aria-label="Toggle sidebar"
+        onClick={() => {
+          if (typeof window !== 'undefined') {
+            const evt = new CustomEvent('toggleSidebar');
+            window.dispatchEvent(evt);
+          }
+        }}
+      >
+        <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-menu"><line x1="4" y1="8" x2="20" y2="8"/><line x1="4" y1="16" x2="20" y2="16"/></svg>
+      </button>
+      {/* Menubar items (children) */}
+      <div className="flex-1 flex items-center gap-2 overflow-x-auto">
+        {props.children}
+      </div>
+    </nav>
   );
 }
 

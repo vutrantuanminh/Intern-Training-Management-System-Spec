@@ -18,7 +18,8 @@ export const env = {
 
     // JWT
     jwtSecret: process.env.JWT_SECRET!,
-    jwtExpiresIn: process.env.JWT_EXPIRES_IN || '15m',
+    // Access token expiration (can be overridden with JWT_EXPIRES_IN). Default: 10 hours
+    jwtExpiresIn: process.env.JWT_EXPIRES_IN || '10h',
     jwtRefreshSecret: process.env.JWT_REFRESH_SECRET!,
     jwtRefreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
 

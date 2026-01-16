@@ -1,4 +1,6 @@
+
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { api } from '../../lib/apiClient';
 import { GitPullRequest, ExternalLink, Check, X, MessageSquare, Loader2 } from 'lucide-react';
 
@@ -8,9 +10,9 @@ interface PullRequestManagementProps {
 
 // PR service functions
 const prService = {
-  getPullRequests: async (params?: { status?: string }) => {
-    const query = new URLSearchParams(params as any).toString();
-    return api.get(`/pull-requests?${query}`);
+  getPullRequests: async (trainerId: string, params?: { status?: string }) => {
+    // Use new GitHub PR endpoint
+    return api.get(`/github-prs/trainer/${trainerId}`);
   },
   approvePR: async (prId: number, feedback: string) => {
     return api.put(`/pull-requests/${prId}/approve`, { feedback });
@@ -21,6 +23,7 @@ const prService = {
 };
 
 export function PullRequestManagement({ trainerId }: PullRequestManagementProps) {
+  const { t } = useTranslation();
   const [pullRequests, setPullRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState<string>('all');
@@ -35,12 +38,15 @@ export function PullRequestManagement({ trainerId }: PullRequestManagementProps)
   const loadPullRequests = async () => {
     try {
       setLoading(true);
-      const params: any = {};
+      const response: any = await prService.getPullRequests(trainerId);
+      let prs = response.data || response || [];
+      
+      // Filter by status if needed
       if (filterStatus !== 'all') {
-        params.status = filterStatus.toUpperCase();
+        prs = prs.filter((pr: any) => pr.status.toLowerCase() === filterStatus.toLowerCase());
       }
-      const response: any = await prService.getPullRequests(params);
-      setPullRequests(response.data || []);
+      
+      setPullRequests(prs);
     } catch (error) {
       console.error('Failed to load pull requests:', error);
     } finally {
@@ -58,7 +64,7 @@ export function PullRequestManagement({ trainerId }: PullRequestManagementProps)
       loadPullRequests();
     } catch (error) {
       console.error('Failed to approve PR:', error);
-      alert('Failed to approve PR');
+      alert(t('pullRequestManagement.failedToApprovePR', 'Failed to approve PR'));
     } finally {
       setSubmitting(false);
     }
@@ -67,7 +73,7 @@ export function PullRequestManagement({ trainerId }: PullRequestManagementProps)
   const handleReject = async () => {
     if (!selectedPR) return;
     if (!feedback.trim()) {
-      alert('Please provide feedback for rejection');
+      alert(t('pullRequestManagement.provideFeedbackForRejection', 'Please provide feedback for rejection'));
       return;
     }
     try {
@@ -78,7 +84,7 @@ export function PullRequestManagement({ trainerId }: PullRequestManagementProps)
       loadPullRequests();
     } catch (error) {
       console.error('Failed to reject PR:', error);
-      alert('Failed to reject PR');
+      alert(t('pullRequestManagement.failedToRejectPR', 'Failed to reject PR'));
     } finally {
       setSubmitting(false);
     }
@@ -86,10 +92,10 @@ export function PullRequestManagement({ trainerId }: PullRequestManagementProps)
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'PENDING': return { class: 'bg-yellow-100 text-yellow-700', label: 'Pending' };
-      case 'APPROVED': return { class: 'bg-green-100 text-green-700', label: 'Approved' };
-      case 'REJECTED': return { class: 'bg-red-100 text-red-700', label: 'Rejected' };
-      default: return { class: 'bg-gray-100 text-gray-700', label: status };
+      case 'PENDING': return { class: 'bg-yellow-100 text-yellow-700', label: t('pullRequestManagement.status.pending', 'Pending') };
+      case 'APPROVED': return { class: 'bg-green-100 text-green-700', label: t('pullRequestManagement.status.approved', 'Approved') };
+      case 'REJECTED': return { class: 'bg-red-100 text-red-700', label: t('pullRequestManagement.status.rejected', 'Rejected') };
+      default: return { class: 'bg-gray-100 text-gray-700', label: t(`pullRequestManagement.status.${status.toLowerCase()}`, status) };
     }
   };
 
@@ -105,15 +111,15 @@ export function PullRequestManagement({ trainerId }: PullRequestManagementProps)
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-2xl font-bold text-gray-900">Pull Requests</h3>
-          <p className="text-gray-600 mt-1">Review and evaluate trainee submissions</p>
+          <h3 className="text-2xl font-bold text-gray-900">{t('pullRequestManagement.title', 'Pull Requests')}</h3>
+          <p className="text-gray-600 mt-1">{t('pullRequestManagement.subtitle', 'Review and evaluate trainee submissions')}</p>
         </div>
       </div>
 
       {/* Filters */}
       <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
         <div className="flex items-center gap-4">
-          <span className="text-gray-700">Filter by status:</span>
+          <span className="text-gray-700">{t('pullRequestManagement.filterByStatus', 'Filter by status:')}</span>
           <div className="flex gap-2">
             {['all', 'pending', 'approved', 'rejected'].map((status) => (
               <button
@@ -124,7 +130,7 @@ export function PullRequestManagement({ trainerId }: PullRequestManagementProps)
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
               >
-                {status.charAt(0).toUpperCase() + status.slice(1)}
+                {t(`pullRequestManagement.status.${status}`, status.charAt(0).toUpperCase() + status.slice(1))}
               </button>
             ))}
           </div>
@@ -148,56 +154,62 @@ export function PullRequestManagement({ trainerId }: PullRequestManagementProps)
                       <div className="flex items-start justify-between mb-2">
                         <div>
                           <h5 className="font-semibold text-gray-900 mb-1">{pr.title}</h5>
-                          <div className="flex items-center gap-3 text-sm text-gray-600">
-                            <span>{pr.trainee?.fullName || 'Unknown'}</span>
-                            <span>•</span>
-                            <span>{pr.task?.title || 'No task'}</span>
-                            <span>•</span>
-                            <span>{new Date(pr.createdAt).toLocaleString()}</span>
+                            <div className="flex items-center gap-3 text-sm text-gray-600">
+                            <span className="font-medium">{pr.trainee?.fullName || t('pullRequestManagement.unknown', 'Unknown')}</span>
+                            <span className="text-gray-400">•</span>
+                            <span className="text-indigo-600 font-medium">{pr.course?.title || t('pullRequestManagement.noCourse', 'No course')}</span>
+                            <span className="text-gray-400">•</span>
+                            <span>{t('pullRequestManagement.traineeId', 'ID')}: {pr.traineeId}</span>
+                            <span className="text-gray-400">•</span>
+                            <span>{new Date(pr.createdAt).toLocaleDateString()}</span>
                           </div>
+                          {pr.prNumber && pr.repoName && (
+                            <div className="text-xs text-gray-500 mt-1">
+                              {pr.repoName} #{pr.prNumber}
+                            </div>
+                          )}
                         </div>
                         <span className={`px-2 py-1 rounded text-sm font-medium ${status.class}`}>
                           {status.label}
                         </span>
                       </div>
 
-                      <p className="text-gray-600 mb-4">{pr.description || 'No description'}</p>
+                      <p className="text-gray-600 mb-4">{pr.description || t('pullRequestManagement.noDescription', 'No description')}</p>
 
                       <div className="flex items-center gap-3">
-                        {pr.githubUrl && (
+                        {pr.prUrl && (
                           <a
-                            href={pr.githubUrl}
+                            href={pr.prUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+                            className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors"
                           >
                             <ExternalLink className="w-4 h-4" />
-                            View on GitHub
+                            {t('pullRequestManagement.viewOnGitHub', 'View on GitHub')}
                           </a>
                         )}
 
-                        {pr.status === 'PENDING' && (
-                          <button
-                            onClick={() => {
-                              setSelectedPR(pr);
-                              setFeedback('');
-                            }}
+                        {pr.status === 'PENDING' && pr.prUrl && (
+                          <a
+                            href={pr.prUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
                             className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
                           >
                             <MessageSquare className="w-4 h-4" />
-                            Review
-                          </button>
+                            {t('pullRequestManagement.review', 'Review')}
+                          </a>
                         )}
                       </div>
 
                       {pr.feedback && (
                         <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                          <div className="text-gray-700 font-medium mb-1">Feedback:</div>
+                          <div className="text-gray-700 font-medium mb-1">{t('pullRequestManagement.feedback', 'Feedback')}:</div>
                           <p className="text-gray-600">{pr.feedback}</p>
                           {pr.reviewedAt && (
                             <div className="text-gray-500 text-sm mt-2">
-                              Reviewed on {new Date(pr.reviewedAt).toLocaleString()}
-                              {pr.reviewer && ` by ${pr.reviewer.fullName}`}
+                              {t('pullRequestManagement.reviewedOn', 'Reviewed on')} {new Date(pr.reviewedAt).toLocaleString()}
+                              {pr.reviewer && ` ${t('pullRequestManagement.by', 'by')} ${pr.reviewer.fullName}`}
                             </div>
                           )}
                         </div>
@@ -211,7 +223,7 @@ export function PullRequestManagement({ trainerId }: PullRequestManagementProps)
         ) : (
           <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
             <GitPullRequest className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-            <p className="text-gray-500">No pull requests found</p>
+            <p className="text-gray-500">{t('pullRequestManagement.noPullRequests', 'No pull requests found')}</p>
           </div>
         )}
       </div>
@@ -221,19 +233,19 @@ export function PullRequestManagement({ trainerId }: PullRequestManagementProps)
         <div className="fixed inset-0 bg-black/40 backdrop-blur-md flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl">
             <div className="p-6 border-b border-gray-200">
-              <h4 className="text-lg font-semibold">Review Pull Request</h4>
+              <h4 className="text-lg font-semibold">{t('pullRequestManagement.reviewTitle', 'Review Pull Request')}</h4>
               <p className="text-gray-600 mt-1">{selectedPR.title}</p>
             </div>
 
             <div className="p-6">
               <div className="mb-4">
-                <label className="block text-gray-700 font-medium mb-2">Feedback</label>
+                <label className="block text-gray-700 font-medium mb-2">{t('pullRequestManagement.feedback', 'Feedback')}</label>
                 <textarea
                   value={feedback}
                   onChange={(e) => setFeedback(e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                   rows={6}
-                  placeholder="Provide feedback to the trainee..."
+                  placeholder={t('pullRequestManagement.feedbackPlaceholder', 'Provide feedback to the trainee...')}
                 />
               </div>
 
@@ -244,7 +256,7 @@ export function PullRequestManagement({ trainerId }: PullRequestManagementProps)
                   className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
                 >
                   {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
-                  Approve
+                  {t('pullRequestManagement.approve', 'Approve')}
                 </button>
                 <button
                   onClick={handleReject}
@@ -252,7 +264,7 @@ export function PullRequestManagement({ trainerId }: PullRequestManagementProps)
                   className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
                 >
                   {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <X className="w-4 h-4" />}
-                  Reject
+                  {t('pullRequestManagement.reject', 'Reject')}
                 </button>
                 <button
                   onClick={() => {
@@ -262,7 +274,7 @@ export function PullRequestManagement({ trainerId }: PullRequestManagementProps)
                   disabled={submitting}
                   className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50"
                 >
-                  Cancel
+                  {t('pullRequestManagement.cancel', 'Cancel')}
                 </button>
               </div>
             </div>

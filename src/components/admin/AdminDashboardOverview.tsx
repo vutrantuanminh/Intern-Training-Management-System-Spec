@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import '../../styles/AdminDashboard.css';
 import { Users, BookOpen, TrendingUp } from 'lucide-react';
 import { courseService } from '../../services/courseService';
 import { userService } from '../../services/userService';
@@ -8,6 +10,7 @@ interface AdminDashboardOverviewProps {
 }
 
 export function AdminDashboardOverview({ onNavigate }: AdminDashboardOverviewProps) {
+    const { t } = useTranslation();
     const [stats, setStats] = useState({
         totalUsers: 0,
         totalCourses: 0,
@@ -91,28 +94,28 @@ export function AdminDashboardOverview({ onNavigate }: AdminDashboardOverviewPro
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <StatCard
-                    title="Total Users"
+                    title={t('totalUsers')}
                     value={stats.totalUsers}
                     icon={<Users className="w-6 h-6" />}
                     color="blue"
                     trend="+12 this month"
                 />
                 <StatCard
-                    title="Active Courses"
+                    title={t('activeCourses')}
                     value={stats.activeCourses}
                     icon={<BookOpen className="w-6 h-6" />}
                     color="green"
                     trend={`${stats.totalCourses} total`}
                 />
                 <StatCard
-                    title="Trainees"
+                    title={t('trainees')}
                     value={stats.totalTrainees}
                     icon={<Users className="w-6 h-6" />}
                     color="purple"
                     trend="Active learners"
                 />
                 <StatCard
-                    title="Completion Rate"
+                    title={t('completionRate')}
                     value={`${stats.completionRate}%`}
                     icon={<TrendingUp className="w-6 h-6" />}
                     color="orange"
@@ -151,7 +154,7 @@ export function AdminDashboardOverview({ onNavigate }: AdminDashboardOverviewPro
                                 <span className="text-gray-600 text-sm">42%</span>
                             </div>
                             <div className="w-full bg-gray-200 rounded-full h-2">
-                                <div className="bg-indigo-600 h-2 rounded-full" style={{ width: '42%' }}></div>
+                                <div className="bg-indigo-600 h-2 rounded-full admin-storage-bar"></div>
                             </div>
                         </div>
                     </div>

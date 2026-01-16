@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Course, CourseStatus } from '../../types';
 import { mockCourses, mockUsers } from '../../data/mockData';
 import { Plus, Search, Filter, Calendar, User, Play, StopCircle, Edit, Trash2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { CreateCourseModal } from './CreateCourseModal';
 import { CourseDetails } from './CourseDetails';
 
@@ -10,6 +11,7 @@ interface CourseManagementProps {
 }
 
 export function CourseManagement({ userId }: CourseManagementProps) {
+  const { t } = useTranslation();
   const [courses, setCourses] = useState<Course[]>(mockCourses);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<CourseStatus | 'all'>('all');
@@ -32,9 +34,9 @@ export function CourseManagement({ userId }: CourseManagementProps) {
 
   const getStatusText = (status: CourseStatus) => {
     switch (status) {
-      case 'not_started': return 'Not Started';
-      case 'in_progress': return 'In Progress';
-      case 'finished': return 'Finished';
+      case 'not_started': return t('supervisor.courseStatus.not_started');
+      case 'in_progress': return t('supervisor.courseStatus.in_progress');
+      case 'finished': return t('supervisor.courseStatus.finished');
     }
   };
 
@@ -45,7 +47,7 @@ export function CourseManagement({ userId }: CourseManagementProps) {
   };
 
   const handleFinishCourse = (courseId: string) => {
-    if (confirm('Finish this course? All in-progress subjects will be marked as finished.')) {
+    if (confirm(t('supervisor.courseManagement.finishConfirm'))) {
       setCourses(courses.map(c => 
         c.id === courseId ? { ...c, status: 'finished', endDate: new Date() } : c
       ));
@@ -64,16 +66,16 @@ export function CourseManagement({ userId }: CourseManagementProps) {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h3>Course Management</h3>
-          <p className="text-gray-600 mt-1">Create and manage training courses</p>
+          <div>
+          <h3>{t('supervisor.courseManagement.title')}</h3>
+          <p className="text-gray-600 mt-1">{t('supervisor.courseManagement.description')}</p>
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
           className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
         >
           <Plus className="w-4 h-4" />
-          Create Course
+          {t('supervisor.courseManagement.createCourse')}
         </button>
       </div>
 
@@ -84,7 +86,7 @@ export function CourseManagement({ userId }: CourseManagementProps) {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
               type="text"
-              placeholder="Search courses..."
+              placeholder={t('supervisor.courseManagement.searchPlaceholder')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
@@ -95,10 +97,10 @@ export function CourseManagement({ userId }: CourseManagementProps) {
             onChange={(e) => setFilterStatus(e.target.value as CourseStatus | 'all')}
             className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
           >
-            <option value="all">All Status</option>
-            <option value="not_started">Not Started</option>
-            <option value="in_progress">In Progress</option>
-            <option value="finished">Finished</option>
+            <option value="all">{t('supervisor.courseManagement.filter.all')}</option>
+            <option value="not_started">{t('supervisor.courseManagement.filter.not_started')}</option>
+            <option value="in_progress">{t('supervisor.courseManagement.filter.in_progress')}</option>
+            <option value="finished">{t('supervisor.courseManagement.filter.finished')}</option>
           </select>
         </div>
       </div>
@@ -147,14 +149,13 @@ export function CourseManagement({ userId }: CourseManagementProps) {
                     onClick={() => setSelectedCourse(course)}
                     className="flex-1 px-4 py-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100"
                   >
-                    View Details
+                    {t('supervisor.courseManagement.viewDetails')}
                   </button>
-                  
                   {course.status === 'not_started' && course.trainerId && (
                     <button
                       onClick={() => handleStartCourse(course.id)}
                       className="px-4 py-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-100"
-                      title="Start Course"
+                      title={t('startCourse')}
                     >
                       <Play className="w-4 h-4" />
                     </button>
@@ -164,7 +165,7 @@ export function CourseManagement({ userId }: CourseManagementProps) {
                     <button
                       onClick={() => handleFinishCourse(course.id)}
                       className="px-4 py-2 bg-gray-50 text-gray-600 rounded-lg hover:bg-gray-100"
-                      title="Finish Course"
+                      title={t('finishCourse')}
                     >
                       <StopCircle className="w-4 h-4" />
                     </button>

@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useWebRTC } from '../hooks/useWebRTC';
 
 interface VideoCallProps {
@@ -8,6 +9,7 @@ interface VideoCallProps {
 }
 
 export function VideoCall({ roomId, userId, onLeave }: VideoCallProps) {
+    const { t } = useTranslation();
     const localVideoRef = useRef<HTMLVideoElement>(null);
     const remoteVideosRef = useRef<Map<string, HTMLVideoElement>>(new Map());
 
@@ -46,12 +48,12 @@ export function VideoCall({ roomId, userId, onLeave }: VideoCallProps) {
             {/* Header */}
             <div className="absolute top-0 left-0 right-0 p-4 bg-gradient-to-b from-black/50 to-transparent z-10">
                 <div className="flex items-center justify-between">
-                    <h1 className="text-white text-xl font-semibold">Video Call</h1>
+                    <h1 className="text-white text-xl font-semibold">{t('videoCall.title')}</h1>
                     <button
                         onClick={handleLeave}
                         className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
                     >
-                        Leave Call
+                        {t('videoCall.leaveCall')}
                     </button>
                 </div>
             </div>
@@ -73,7 +75,7 @@ export function VideoCall({ roomId, userId, onLeave }: VideoCallProps) {
                             className="w-full h-full object-cover"
                         />
                         <div className="absolute bottom-2 left-2 bg-black/50 px-3 py-1 rounded-full text-white text-sm">
-                            You {!isVideoEnabled && '(Video Off)'}
+                            {t('videoCall.you')}{!isVideoEnabled && ` (${t('videoCall.videoOff')})`}
                         </div>
                     </div>
 
@@ -136,6 +138,7 @@ export function VideoCall({ roomId, userId, onLeave }: VideoCallProps) {
 }
 
 function RemoteVideo({ peerId, stream }: { peerId: string; stream: MediaStream }) {
+    const { t } = useTranslation();
     const videoRef = useRef<HTMLVideoElement>(null);
 
     useEffect(() => {
@@ -153,7 +156,7 @@ function RemoteVideo({ peerId, stream }: { peerId: string; stream: MediaStream }
                 className="w-full h-full object-cover"
             />
             <div className="absolute bottom-2 left-2 bg-black/50 px-3 py-1 rounded-full text-white text-sm">
-                User {peerId}
+                {t('videoCall.user', { id: peerId })}
             </div>
         </div>
     );
