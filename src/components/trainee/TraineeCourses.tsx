@@ -390,9 +390,10 @@ function SubjectDetail({ subject, onBack, onTaskComplete }: {
         t.id === taskId ? { ...t, status: 'COMPLETED' } : t
       ));
       onTaskComplete();
-    } catch (error) {
+    } catch (error: any) {
       console.error(t('traineeCourses.failedCompleteTask'), error);
-      alert(t('traineeCourses.failedMarkComplete'));
+      const errorMsg = error?.response?.data?.message || error?.message || t('traineeCourses.failedMarkComplete');
+      alert(errorMsg);
     } finally {
       setCompletingTask(null);
     }
