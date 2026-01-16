@@ -143,7 +143,7 @@ export function CourseDetail({ courseId, onClose }: CourseDetailProps) {
 
     return (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-md flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[85vh] overflow-y-auto">
                 {/* Header */}
                 <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -362,8 +362,8 @@ export function CourseDetail({ courseId, onClose }: CourseDetailProps) {
                                         <label
                                             key={trainee.id}
                                             className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${selectedTrainees.includes(trainee.id)
-                                                    ? 'bg-indigo-50 border-2 border-indigo-200'
-                                                    : 'hover:bg-gray-50 border-2 border-transparent'
+                                                ? 'bg-indigo-50 border-2 border-indigo-200'
+                                                : 'hover:bg-gray-50 border-2 border-transparent'
                                                 }`}
                                         >
                                             <input
