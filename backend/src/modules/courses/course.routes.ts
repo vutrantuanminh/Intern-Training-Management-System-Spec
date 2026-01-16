@@ -1,4 +1,5 @@
 import { Router, Request, Response, NextFunction } from 'express';
+import { Prisma } from '@prisma/client';
 import { prisma } from '../../config/database.js';
 import { env } from '../../config/env.js';
 import { successResponse, errorResponse, paginatedResponse } from '../../utils/response.js';
@@ -600,7 +601,7 @@ router.post(
     async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
             const { id } = req.params;
-            const { traineeIds } = req.body;
+            const { traineeIds, activate } = req.body as { traineeIds: number[]; activate?: boolean };
             const courseId = parseInt(id);
 
             // Check if course exists
@@ -650,14 +651,15 @@ router.post(
                         data: { courseId, traineeId },
                     });
 
-                    // Create trainee subjects
+                    // Create trainee subjects; if `activate` is true, set trainee subject status to IN_PROGRESS
                     if (course.subjects.length > 0) {
-                        await prisma.traineeSubject.createMany({
-                            data: course.subjects.map(subject => ({
-                                courseTraineeId: courseTrainee.id,
-                                subjectId: subject.id,
-                            })),
-                        });
+                        const data = course.subjects.map(subject => ({
+                            courseTraineeId: courseTrainee.id,
+                            subjectId: subject.id,
+                            ...(activate ? { status: 'IN_PROGRESS' as any } : {}),
+                        }));
+
+                        await prisma.traineeSubject.createMany({ data });
                     }
                 }
             }

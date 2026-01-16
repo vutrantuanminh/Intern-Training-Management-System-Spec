@@ -82,13 +82,7 @@ router.post(
                 return;
             }
 
-            // Check if subject is in progress
-            if (task.subject.status !== 'IN_PROGRESS') {
-                errorResponse(res, 'Subject is not in progress', 400);
-                return;
-            }
-
-            // Check if trainee is enrolled
+            // Check if trainee is enrolled and whether the subject is allowed for them
             const courseTrainee = await prisma.courseTrainee.findFirst({
                 where: {
                     courseId: task.subject.courseId,
@@ -98,6 +92,21 @@ router.post(
 
             if (!courseTrainee) {
                 errorResponse(res, 'You are not enrolled in this course', 403);
+                return;
+            }
+
+            // Check subject accessibility: either subject is globally IN_PROGRESS or trainee's subject is IN_PROGRESS
+            const traineeSubject = await prisma.traineeSubject.findFirst({
+                where: {
+                    courseTraineeId: courseTrainee.id,
+                    subjectId: task.subjectId,
+                },
+            });
+
+            const subjectAccessible = task.subject.status === 'IN_PROGRESS' || (traineeSubject && traineeSubject.status === 'IN_PROGRESS');
+
+            if (!subjectAccessible) {
+                errorResponse(res, 'Subject is not in progress for you', 400);
                 return;
             }
 
@@ -131,14 +140,7 @@ router.post(
                 },
             });
 
-            // Update trainee subject status
-            const traineeSubject = await prisma.traineeSubject.findFirst({
-                where: {
-                    courseTraineeId: courseTrainee.id,
-                    subjectId: task.subjectId,
-                },
-            });
-
+            // Update trainee subject status (reuse `traineeSubject` fetched earlier)
             if (traineeSubject && traineeSubject.status !== 'FINISHED') {
                 await prisma.traineeSubject.update({
                     where: { id: traineeSubject.id },
@@ -178,9 +180,30 @@ router.post(
                 return;
             }
 
-            // Check if subject is in progress
-            if (task.subject.status !== 'IN_PROGRESS') {
-                errorResponse(res, 'Cannot uncomplete task - subject is not in progress', 400);
+            // Check enrollment and subject accessibility
+            const courseTrainee = await prisma.courseTrainee.findFirst({
+                where: {
+                    courseId: task.subject.courseId,
+                    traineeId,
+                },
+            });
+
+            if (!courseTrainee) {
+                errorResponse(res, 'You are not enrolled in this course', 403);
+                return;
+            }
+
+            const traineeSubject = await prisma.traineeSubject.findFirst({
+                where: {
+                    courseTraineeId: courseTrainee.id,
+                    subjectId: task.subjectId,
+                },
+            });
+
+            const subjectAccessible = task.subject.status === 'IN_PROGRESS' || (traineeSubject && traineeSubject.status === 'IN_PROGRESS');
+
+            if (!subjectAccessible) {
+                errorResponse(res, 'Cannot uncomplete task - subject is not in progress for you', 400);
                 return;
             }
 

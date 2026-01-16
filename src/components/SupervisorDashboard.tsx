@@ -94,7 +94,7 @@ export function SupervisorDashboard({ user, onLogout }: SupervisorDashboardProps
 function SupervisorOverview() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const { t } = require('react-i18next').useTranslation();
+  const { t } = useTranslation();
 
   useEffect(() => {
     loadDashboard();
@@ -879,7 +879,7 @@ function SubjectsTab({ subjects, onReload }: { subjects: any[]; onReload?: () =>
 // ============== TRAINEES TAB ==============
 function TraineesTab({ trainees, availableTrainees, canModify, onAdd, onRemove, onUpdateStatus }: any) {
   const [showAddModal, setShowAddModal] = useState(false);
-  const { t } = require('react-i18next').useTranslation();
+  const { t } = useTranslation();
 
   return (
     <div className="space-y-4">
@@ -952,7 +952,7 @@ function TraineesTab({ trainees, availableTrainees, canModify, onAdd, onRemove, 
 // ============== TRAINERS TAB ==============
 function TrainersTab({ trainers, availableTrainers, onAdd, onRemove }: any) {
   const [showAddModal, setShowAddModal] = useState(false);
-  const { t } = require('react-i18next').useTranslation();
+  const { t } = useTranslation();
 
   return (
     <div className="space-y-4">
@@ -1005,10 +1005,14 @@ function TrainersTab({ trainers, availableTrainers, onAdd, onRemove }: any) {
 // ============== ADD USER MODAL ==============
 function AddUserModal({ title, users, onSelect, onClose }: any) {
   const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const pageSize = 20;
   const filtered = users.filter((u: any) =>
     (u.fullName || '').toLowerCase().includes(search.toLowerCase()) ||
     (u.email || '').toLowerCase().includes(search.toLowerCase())
   );
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const paged = filtered.slice((page - 1) * pageSize, page * pageSize);
 
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-md flex items-center justify-center z-[60]">
@@ -1026,7 +1030,7 @@ function AddUserModal({ title, users, onSelect, onClose }: any) {
             className="w-full p-2 border border-gray-300 rounded-lg mb-4"
           />
           <div className="max-h-60 overflow-y-auto space-y-2">
-            {filtered.map((user: any) => (
+            {paged.map((user: any) => (
               <div
                 key={user.id}
                 onClick={() => onSelect(user.id)}
@@ -1043,6 +1047,28 @@ function AddUserModal({ title, users, onSelect, onClose }: any) {
             ))}
             {filtered.length === 0 && <p className="text-gray-500 text-center py-4">No users available</p>}
           </div>
+          {filtered.length > pageSize && (
+            <div className="p-3 flex items-center justify-between border-t border-gray-100">
+              <div className="text-sm text-gray-600">{filtered.length} results</div>
+              <div className="flex items-center gap-2">
+                <button
+                  disabled={page <= 1}
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  className="px-3 py-1 bg-white border border-gray-300 rounded disabled:opacity-50"
+                >
+                  Prev
+                </button>
+                <div className="text-sm text-gray-700">{page} / {totalPages}</div>
+                <button
+                  disabled={page >= totalPages}
+                  onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                  className="px-3 py-1 bg-white border border-gray-300 rounded disabled:opacity-50"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

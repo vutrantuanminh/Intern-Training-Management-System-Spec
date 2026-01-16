@@ -85,6 +85,7 @@ export const updateCourseSchema = z.object({
 
 export const addTraineesSchema = z.object({
     traineeIds: z.array(z.number().int().positive()).min(1),
+    activate: z.boolean().optional(),
 });
 
 export const addTrainersSchema = z.object({

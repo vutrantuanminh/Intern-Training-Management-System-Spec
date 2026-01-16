@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { ArrowLeft, Users, Plus, UserMinus, Loader2, BookOpen, Search } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../lib/apiClient';
+import { supervisorService } from '../../services/trainerService';
 
 interface Course {
   id: number;
@@ -40,6 +41,10 @@ export function CourseDetails({ course, onBack }: CourseDetailsProps) {
   const [showAddTrainee, setShowAddTrainee] = useState(false);
   const [availableTrainees, setAvailableTrainees] = useState<any[]>([]);
   const [loadingAvailable, setLoadingAvailable] = useState(false);
+  const [availablePage, setAvailablePage] = useState(1);
+  const [availableLimit] = useState(20);
+  const [availableTotal, setAvailableTotal] = useState(0);
+  const [availableTotalPages, setAvailableTotalPages] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTrainees, setSelectedTrainees] = useState<number[]>([]);
   const [adding, setAdding] = useState(false);
@@ -70,13 +75,21 @@ export function CourseDetails({ course, onBack }: CourseDetailsProps) {
   };
 
   const loadAvailableTrainees = async () => {
+    await loadAvailableTraineesPage(1);
+  };
+
+  const loadAvailableTraineesPage = async (page: number) => {
     setLoadingAvailable(true);
     try {
-      const response: any = await api.get('/supervisor/trainees');
-      const allTrainees = response.data || [];
-      // Filter out already enrolled
+      const params: any = { page, limit: availableLimit };
+      if (searchTerm) params.search = searchTerm;
+      const response: any = await supervisorService.getAllTrainees(params);
+      const list = response.data || [];
       const enrolledIds = trainees.map(t => t.id);
-      setAvailableTrainees(allTrainees.filter((t: any) => !enrolledIds.includes(t.id)));
+      setAvailableTrainees(list.filter((t: any) => !enrolledIds.includes(t.id)));
+      setAvailablePage(response.pagination?.page || page);
+      setAvailableTotal(response.pagination?.total || 0);
+      setAvailableTotalPages(response.pagination?.totalPages || 1);
     } catch (error) {
       console.error('Failed to load available trainees:', error);
     } finally {
@@ -126,9 +139,18 @@ export function CourseDetails({ course, onBack }: CourseDetailsProps) {
   };
 
   const filteredAvailable = availableTrainees.filter(t =>
+    // server-side search already applied; keep local filter as fallback
     t.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     t.email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  useEffect(() => {
+    // debounce search
+    const id = setTimeout(() => {
+      if (showAddTrainee) loadAvailableTraineesPage(1);
+    }, 300);
+    return () => clearTimeout(id);
+  }, [searchTerm]);
 
   if (loading) {
     return (
@@ -328,7 +350,27 @@ import { useTranslation } from 'react-i18next';
                   </div>
                 )}
             </div>
-
+            {/* Pagination controls */}
+            <div className="p-3 border-t border-gray-100 flex items-center justify-between">
+              <div className="text-sm text-gray-600">{availableTotal} results</div>
+              <div className="flex items-center gap-2">
+                <button
+                  disabled={availablePage <= 1 || loadingAvailable}
+                  onClick={() => loadAvailableTraineesPage(availablePage - 1)}
+                  className="px-3 py-1 bg-white border border-gray-300 rounded disabled:opacity-50"
+                >
+                  Prev
+                </button>
+                <div className="text-sm text-gray-700">Page {availablePage} / {availableTotalPages}</div>
+                <button
+                  disabled={availablePage >= availableTotalPages || loadingAvailable}
+                  onClick={() => loadAvailableTraineesPage(availablePage + 1)}
+                  className="px-3 py-1 bg-white border border-gray-300 rounded disabled:opacity-50"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
             <div className="p-4 border-t border-gray-200 flex gap-3">
                 <button
                   onClick={() => {

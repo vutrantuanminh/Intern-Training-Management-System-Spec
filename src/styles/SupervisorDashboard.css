@@ -26,3 +26,36 @@
   height: 0.5rem;
   border-radius: 9999px;
 }
+
+/* Prevent horizontal overflow and ensure consistent box sizing */
+html, body, #root {
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+*, *::before, *::after {
+  box-sizing: inherit;
+}
+
+/* Generic modal container fixes to avoid overflowing the viewport */
+.modal-backdrop,
+.trainee-modal-backdrop {
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-container,
+.trainee-modal-container,
+.grade-modal-container {
+  max-height: calc(100vh - 96px);
+  width: min(96%, 1100px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-content,
+.trainee-modal-content {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
