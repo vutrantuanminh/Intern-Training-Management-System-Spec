@@ -4,7 +4,8 @@ const { spawn } = require('child_process');
 const useSmeeEnv = process.env.USE_SMEE;
 const useSmee = !(useSmeeEnv === 'false' || useSmeeEnv === '0');
 const smeeUrl = process.env.SMEE_URL || 'https://smee.io/sXxkAtqpqOujy7';
-const smeeTarget = process.env.SMEE_TARGET || 'http://localhost:5000/api/github/webhook';
+// Default forward target for smee: production Vercel app webhook endpoint
+const smeeTarget = process.env.SMEE_TARGET || 'https://intern-training-management-system-s.vercel.app/api/github/webhook';
 
 const procs = [];
 
