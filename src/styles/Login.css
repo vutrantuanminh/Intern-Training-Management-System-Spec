@@ -1,22 +1,137 @@
+/* Login Page - Global Font */
+.login-page {
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.login-page * {
+  font-family: inherit;
+}
+
+/* Left Panel Styling */
+.left-panel {
+  display: none;
+  font-family: 'Poppins', sans-serif;
+}
+
+.left-panel h1 {
+  font-size: 2.5rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.left-panel h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.left-panel h3 {
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.left-panel p {
+  font-size: 0.875rem;
+  font-weight: 400;
+}
+
+@media (min-width: 1024px) {
+  .left-panel {
+    display: flex;
+  }
+}
+
+/* Right Panel - Login Form */
+.login-form-container {
+  font-family: 'Poppins', sans-serif;
+}
+
+.login-form-container h1 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.login-form-container p {
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: #6b7280;
+}
+
+.login-form-container label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.login-form-container input {
+  font-size: 0.9375rem;
+  font-weight: 400;
+}
+
+.login-form-container input::placeholder {
+  color: #9ca3af;
+  font-weight: 400;
+}
+
+.login-form-container button[type="submit"] {
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+/* Mobile Logo */
+.mobile-logo h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.mobile-logo p {
+  font-size: 0.875rem;
+  font-weight: 400;
+}
+
+/* Error Box */
+.login-error-box {
+  border-radius: 12px;
+  font-size: 0.875rem;
+}
+
+/* Footer */
+.login-footer {
+  font-size: 0.875rem;
+  font-weight: 400;
+}
+
+.login-footer a {
+  font-weight: 500;
+}
+
+/* Feature Cards */
+.feature-card h3 {
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.feature-card p {
+  font-size: 0.8125rem;
+  font-weight: 400;
+  opacity: 0.9;
+}
+
+/* Legacy classes for backward compatibility */
 .login-title {
   font-family: 'Poppins', sans-serif;
 }
 
 .login-input {
-  border-radius: 16px;
+  border-radius: 12px;
   font-size: 15px;
 }
 
-.login-error-box {
-  border-radius: 16px;
-}
-
 .login-btn {
-  border-radius: 16px;
+  border-radius: 12px;
   font-size: 16px;
 }
 
-/* Login component styles extracted from inline and style props */
 .login-bg {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   font-family: 'Poppins', sans-serif;
@@ -27,7 +142,7 @@
   backdrop-filter: blur(16px);
   padding: 2.5rem;
   border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 32px;
+  border-radius: 24px;
 }
 
 .login-logo {
@@ -72,15 +187,4 @@
   filter: blur(48px);
   bottom: 2.5rem;
   left: 33%;
-}
-
-/* Left panel responsive - hide on mobile, show on desktop */
-.left-panel {
-  display: none;
-}
-
-@media (min-width: 1024px) {
-  .left-panel {
-    display: flex;
-  }
 }

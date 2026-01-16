@@ -83,7 +83,7 @@ export function Login({ onLogin }: LoginProps) {
   ];
 
   return (
-    <div className="min-h-screen flex">
+    <div className="login-page min-h-screen flex">
       {/* Left Panel - Branding & Features */}
       <div className="left-panel w-1/2 bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-800 p-12 flex flex-col justify-between relative overflow-hidden">
         {/* Decorative background elements */}
@@ -119,7 +119,7 @@ export function Login({ onLogin }: LoginProps) {
             {features.map((feature, index) => (
               <div
                 key={index}
-                className="flex items-start gap-4 bg-white/5 backdrop-blur-sm p-4 rounded-xl border border-white/10 hover:bg-white/10 transition-all duration-300"
+                className="feature-card flex items-start gap-4 bg-white/5 backdrop-blur-sm p-4 rounded-xl border border-white/10 hover:bg-white/10 transition-all duration-300"
               >
                 <div className="bg-white/10 p-2 rounded-lg">
                   <feature.icon className="w-5 h-5 text-white" />
@@ -141,10 +141,10 @@ export function Login({ onLogin }: LoginProps) {
       </div>
 
       {/* Right Panel - Login Form */}
-      <div className="flex-1 flex items-center justify-center p-6 bg-gray-50">
+      <div className="login-form-container flex-1 flex items-center justify-center p-6 bg-gray-50">
         <div className="w-full max-w-md">
           {/* Mobile Logo */}
-          <div className="lg:hidden flex items-center justify-center gap-3 mb-8">
+          <div className="mobile-logo lg:hidden flex items-center justify-center gap-3 mb-8">
             <div className="bg-indigo-600 p-3 rounded-xl">
               <GraduationCap className="w-8 h-8 text-white" />
             </div>
